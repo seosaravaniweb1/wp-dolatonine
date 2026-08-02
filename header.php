@@ -22,25 +22,6 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 })();
 </script>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-	darkMode: 'class',
-	theme: {
-		extend: {
-			fontFamily: {
-				sans: [ 'Vazirmatn', 'sans-serif' ],
-			},
-			colors: {
-				dnavy: '#123c52',
-				dgold: '#c39b45',
-				dcream: '#f2efe6',
-			},
-		},
-	},
-};
-</script>
-
 <?php wp_head(); ?>
 </head>
 <body <?php body_class( ( $dolat_dark_default ? 'theme-dark ' : '' ) . 'font-sans bg-dcream text-slate-800 dark:bg-slate-900 dark:text-slate-100' ); ?>>

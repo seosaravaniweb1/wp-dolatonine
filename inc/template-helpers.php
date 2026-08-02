@@ -609,7 +609,7 @@ function dolat_render_frontbox_big_item( $post, $type ) {
 	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="group flex gap-3 rounded-xl border border-slate-100 p-2.5 transition hover:border-dgold/50 hover:shadow-md dark:border-slate-700">
 		<span class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $id ) ); ?>" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
 				<span class="flex h-full w-full items-center justify-center text-2xl"><?php echo esc_html( $icon ); ?></span>
 			<?php endif; ?>
@@ -646,7 +646,7 @@ function dolat_render_news_slide( $post_id ) {
 	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="group block w-56 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
 		<span class="block h-32 w-full overflow-hidden bg-slate-100 dark:bg-slate-700">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
 			<?php else : ?>
 				<span class="flex h-full w-full items-center justify-center text-3xl">📰</span>
 			<?php endif; ?>
@@ -1053,7 +1053,7 @@ function dolat_render_post_top_card( $post_id, $rank ) {
 	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="group flex flex-col items-center gap-2 rounded-xl border border-slate-100 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
 		<span class="relative block h-16 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
 				<span class="flex h-full w-full items-center justify-center text-2xl">📰</span>
 			<?php endif; ?>
@@ -1104,7 +1104,7 @@ function dolat_render_category_post_card( $post_id ) {
 	<article class="flex gap-4 rounded-xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-4">
 		<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700 sm:h-28 sm:w-32">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( $title ); ?>" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
 				<span class="flex h-full w-full items-center justify-center text-3xl">📰</span>
 			<?php endif; ?>

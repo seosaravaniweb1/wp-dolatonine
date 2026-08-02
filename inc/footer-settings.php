@@ -162,7 +162,7 @@ function dolat_render_footer_post( $post_id ) {
 	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="flex items-center gap-2.5 border-b border-white/10 py-2.5 last:border-0">
 		<span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
 				<span class="text-lg"><?php echo esc_html( $icon ); ?></span>
 			<?php endif; ?>

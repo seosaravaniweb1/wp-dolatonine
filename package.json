@@ -1,0 +1,13 @@
+{
+  "name": "dolat-online",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ابزارهای بیلد قالب دولت آنلاین (کامپایل Tailwind CSS)",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/css/tailwind-src.css -o ./assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./assets/css/tailwind-src.css -o ./assets/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}

@@ -135,7 +135,7 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 						<a href="<?php echo esc_url( get_permalink( $n->ID ) ); ?>" class="flex items-center gap-2.5 border-b border-slate-100 py-2.5 last:border-0 dark:border-slate-700">
 							<span class="flex h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
 								<?php if ( $thumb ) : ?>
-									<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+									<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $n->ID ) ); ?>" class="h-full w-full object-cover" loading="lazy">
 								<?php else : ?>
 									<span class="flex h-full w-full items-center justify-center text-lg">📰</span>
 								<?php endif; ?>

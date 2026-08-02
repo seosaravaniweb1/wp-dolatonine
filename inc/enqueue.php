@@ -2,8 +2,11 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 function dolat_enqueue_assets() {
-	wp_enqueue_style( 'dolat-font', 'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&display=swap', array(), null );
-	wp_enqueue_style( 'dolat-main', DOLAT_THEME_URI . '/assets/css/main.css', array( 'dolat-font' ), DOLAT_THEME_VERSION );
+	// فونت وزیرمتن از سرور خودمان (بدون وابستگی به fonts.googleapis.com)
+	wp_enqueue_style( 'dolat-font', DOLAT_THEME_URI . '/assets/css/vazirmatn.css', array(), DOLAT_THEME_VERSION );
+	// Tailwind CSS کامپایل‌شده (به‌جای CDN) — برای بیلد مجدد: npm run build:css
+	wp_enqueue_style( 'dolat-tailwind', DOLAT_THEME_URI . '/assets/css/tailwind.css', array( 'dolat-font' ), DOLAT_THEME_VERSION );
+	wp_enqueue_style( 'dolat-main', DOLAT_THEME_URI . '/assets/css/main.css', array( 'dolat-tailwind' ), DOLAT_THEME_VERSION );
 	wp_enqueue_style( 'dolat-theme-style', get_stylesheet_uri(), array(), DOLAT_THEME_VERSION );
 
 	wp_enqueue_script( 'dolat-main', DOLAT_THEME_URI . '/assets/js/main.js', array(), DOLAT_THEME_VERSION, true );

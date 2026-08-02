@@ -100,6 +100,19 @@
 - ساخت فهرست مطالب: تابع `dolat_build_content_with_toc` در `inc/template-helpers.php` (با DOMDocument، بدون regex شکننده)
 - تکسونومی `content_type` نسخه قبلی کاملا حذف شد؛ جای آن زیردسته‌های واقعی وردپرس نشستند.
 
+### بیلد Tailwind CSS
+بخش‌های جدیدتر قالب (هدر، فوتر، صفحه اصلی، آرشیو دسته‌ها و استعلام‌ها) با Tailwind CSS ساخته شده‌اند که به‌صورت یک فایل CSS کامپایل‌شده (`assets/css/tailwind.css`) در سایت بارگذاری می‌شود، نه از CDN.
+
+اگر کلاس Tailwind تازه‌ای به فایل‌های PHP یا `assets/js/main.js` اضافه کردید، حتما بیلد را دوباره اجرا کنید وگرنه کلاس جدید در فایل CSS نهایی نیست:
+```
+npm install   # فقط بار اول
+npm run build:css
+```
+تنظیمات (رنگ‌های `dnavy`/`dgold`/`dcream`، فونت پیش‌فرض) در `tailwind.config.js` است. فایل `assets/css/tailwind.css` باید در گیت کامیت شود چون هاست وردپرس معمولی `npm` اجرا نمی‌کند.
+
+### فونت
+فونت وزیرمتن دیگر از `fonts.googleapis.com` لود نمی‌شود؛ فایل‌های woff2 در `assets/fonts/` و تعریف `@font-face` در `assets/css/vazirmatn.css` قرار دارند (سرعت و پایداری بهتر برای کاربر ایران، بدون وابستگی به گوگل).
+
 
 ---
 

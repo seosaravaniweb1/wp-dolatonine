@@ -14,7 +14,7 @@ while ( have_posts() ) : the_post();
 			<div class="d-modal-icon" style="background:<?php echo esc_attr( $data['tagColor'] ); ?>1a;color:<?php echo esc_attr( $data['tagColor'] ); ?>;"><?php echo esc_html( $data['icon'] ); ?></div>
 			<div>
 				<?php if ( $data['tag'] ) : ?><span class="d-modal-tag" style="background:<?php echo esc_attr( $data['tagColor'] ); ?>"><?php echo esc_html( $data['tag'] ); ?></span><?php endif; ?>
-				<div class="d-modal-title"><?php echo esc_html( $data['title'] ); ?></div>
+				<h1 class="d-modal-title"><?php echo esc_html( $data['title'] ); ?></h1>
 			</div>
 		</div>
 
