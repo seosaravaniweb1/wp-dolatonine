@@ -41,7 +41,7 @@ function dolat_register_estelam_cpt() {
 		'menu_position' => 5,
 		'has_archive'   => 'estelamha',
 		'rewrite'       => array( 'slug' => 'estelam', 'with_front' => false ),
-		'supports'      => array( 'title', 'thumbnail', 'excerpt', 'editor' ),
+		'supports'      => array( 'title', 'thumbnail', 'excerpt', 'editor', 'comments' ),
 		'show_in_rest'  => false,
 		'taxonomies'    => array( 'category' ),
 	) );

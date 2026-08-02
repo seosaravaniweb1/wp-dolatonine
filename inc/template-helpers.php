@@ -982,3 +982,134 @@ function dolat_render_govsites( $rows = 3 ) {
 	<?php
 	return ob_get_clean();
 }
+
+/* ═════════════════════════════════════════════════
+   آرشیو استعلام‌ها (archive-estelam.php / taxonomy-estelam_tag.php)
+═════════════════════════════════════════════════ */
+
+/** پربازدیدترین استعلام‌ها — کل سایت، یا محدود به یک برچسب (estelam_tag) خاص */
+function dolat_get_top_estelam_scoped( $term = null, $count = 5 ) {
+	if ( ! $term ) return dolat_get_top_estelam( $count );
+
+	$args = array(
+		'post_type'      => 'estelam',
+		'posts_per_page' => $count,
+		'no_found_rows'  => true,
+		'meta_key'       => 'dolat_post_views',
+		'orderby'        => 'meta_value_num',
+		'order'          => 'DESC',
+		'tax_query'      => array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => $term->term_id ) ),
+	);
+	$q = new WP_Query( $args );
+	if ( ! $q->have_posts() ) {
+		unset( $args['meta_key'], $args['orderby'], $args['order'] );
+		$q = new WP_Query( $args );
+	}
+	return $q->posts;
+}
+
+/** کارت گرید عمودی برای بخش «پرطرفدارترین خدمات» بالای آرشیو */
+function dolat_render_estelam_top_card( $post_id, $rank ) {
+	$title = get_the_title( $post_id );
+	$icon  = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
+	$terms = get_the_terms( $post_id, 'estelam_tag' );
+	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
+	$color = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
+	$views = (int) get_post_meta( $post_id, 'dolat_post_views', true );
+
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" data-estelam-id="<?php echo esc_attr( $post_id ); ?>" class="group flex flex-col items-center gap-2 rounded-xl border border-slate-100 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+		<span class="relative">
+			<span class="flex h-14 w-14 items-center justify-center rounded-full text-2xl" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $icon ); ?></span>
+			<span class="absolute -top-1 -end-1 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( number_format_i18n( $rank ) ); ?></span>
+		</span>
+		<span class="line-clamp-1 text-sm font-bold text-slate-800 group-hover:text-dnavy dark:text-slate-100"><?php echo esc_html( $title ); ?></span>
+		<span class="text-[11px] text-slate-400"><?php echo esc_html( $views > 0 ? number_format_i18n( $views ) . ' بازدید' : ( $tag ?: 'استعلام' ) ); ?></span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/** کارت افقی برای لیست اصلی آرشیو (آیکون راست، عنوان+بج وسط، فلش چپ) */
+function dolat_render_estelam_row_card( $post_id ) {
+	$title = get_the_title( $post_id );
+	$icon  = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
+	$desc  = get_post_meta( $post_id, '_dolat_short_desc', true );
+	$terms = get_the_terms( $post_id, 'estelam_tag' );
+	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
+	$color = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
+
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" data-estelam-id="<?php echo esc_attr( $post_id ); ?>" class="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-dgold/50 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+		<span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $icon ); ?></span>
+		<span class="min-w-0 flex-1">
+			<?php if ( $tag ) : ?><span class="mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold text-white" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $tag ); ?></span><?php endif; ?>
+			<span class="line-clamp-1 block text-sm font-bold text-slate-800 dark:text-slate-100"><?php echo esc_html( $title ); ?></span>
+			<?php if ( $desc ) : ?><span class="line-clamp-1 block text-xs text-slate-400"><?php echo esc_html( $desc ); ?></span><?php endif; ?>
+		</span>
+		<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-400 dark:bg-slate-700">‹</span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/** دسته‌های مادر (category) استفاده‌شده توسط استعلام‌های یک برچسب (estelam_tag) خاص */
+function dolat_get_categories_for_estelam_tag( $tag_term_id ) {
+	$post_ids = get_posts( array(
+		'post_type'      => 'estelam',
+		'posts_per_page' => 50,
+		'fields'         => 'ids',
+		'no_found_rows'  => true,
+		'tax_query'      => array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => (int) $tag_term_id ) ),
+	) );
+	if ( ! $post_ids ) return array();
+
+	$cat_ids = array();
+	foreach ( $post_ids as $pid ) {
+		$terms = wp_get_post_terms( $pid, 'category', array( 'fields' => 'ids' ) );
+		if ( ! is_wp_error( $terms ) ) $cat_ids = array_merge( $cat_ids, $terms );
+	}
+	return array_unique( $cat_ids );
+}
+
+/** اخبار سایدبار آرشیو استعلام: کلی، یا محدود به دسته‌های مرتبط با برچسب جاری */
+function dolat_get_sidebar_news( $count = 4 ) {
+	$args = array( 'post_type' => 'post', 'posts_per_page' => $count, 'no_found_rows' => true );
+
+	if ( is_tax( 'estelam_tag' ) ) {
+		$term    = get_queried_object();
+		$cat_ids = $term ? dolat_get_categories_for_estelam_tag( $term->term_id ) : array();
+		if ( $cat_ids ) {
+			$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $cat_ids ) );
+		}
+	}
+	return ( new WP_Query( $args ) )->posts;
+}
+
+/** آخرین دیدگاه‌های تأییدشده — ترجیحاً روی پست‌تایپ استعلام */
+function dolat_get_live_comments( $count = 4 ) {
+	$comments = get_comments( array( 'status' => 'approve', 'number' => $count, 'post_type' => 'estelam' ) );
+	if ( ! $comments ) {
+		$comments = get_comments( array( 'status' => 'approve', 'number' => $count ) );
+	}
+	return $comments;
+}
+
+/** ردیف یک دیدگاه در ویجت «نظرات زنده کاربران» */
+function dolat_render_live_comment( $comment ) {
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_comment_link( $comment ) ); ?>" class="flex gap-2.5 border-b border-slate-100 py-3 last:border-0 dark:border-slate-700">
+		<?php echo get_avatar( $comment, 36, '', '', array( 'class' => 'h-9 w-9 shrink-0 rounded-full' ) ); ?>
+		<span class="min-w-0 flex-1">
+			<span class="flex items-center gap-1 text-[13px] font-bold text-slate-800 dark:text-slate-100">
+				<?php echo esc_html( get_comment_author( $comment ) ); ?>
+			</span>
+			<span class="line-clamp-2 block text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( wp_trim_words( get_comment_excerpt( $comment ), 14, '…' ) ); ?></span>
+		</span>
+	</a>
+	<?php
+	return ob_get_clean();
+}

@@ -198,14 +198,24 @@
 		if (btn) btn.addEventListener('click', function () { input.focus(); });
 	}
 
+	/* ---------- جستجوی Ajax مخصوص آرشیو استعلام‌ها (فقط پست‌تایپ estelam) ---------- */
+	function initEstelamArchiveSearch() {
+		var input = $('#dEstelamSearchInput'), results = $('#dEstelamSearchResults');
+		if (!input) return;
+		bindLiveSearch(input, results, { scope: 'estelam' });
+	}
+
 	var searchTimer = null;
-	function bindLiveSearch(input, resultsEl) {
+	function bindLiveSearch(input, resultsEl, options) {
+		options = options || {};
 		input.addEventListener('input', function () {
 			var term = input.value.trim();
 			clearTimeout(searchTimer);
 			if (term.length < 2) { if (resultsEl) resultsEl.innerHTML = ''; return; }
 			searchTimer = setTimeout(function () {
-				fetchAjax('dolat_search', { term: term }).then(function (res) {
+				var payload = { term: term };
+				if (options.scope) payload.scope = options.scope;
+				fetchAjax('dolat_search', payload).then(function (res) {
 					if (!resultsEl) return;
 					resultsEl.innerHTML = res && res.html ? res.html : '';
 				});
@@ -586,6 +596,7 @@
 		initNewsSlider();
 		initFooterDynTabs();
 		initHeaderSearch();
+		initEstelamArchiveSearch();
 		initHeroSearch();
 		initCategoryTabs();
 		initModal();

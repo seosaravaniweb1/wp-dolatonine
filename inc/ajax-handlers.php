@@ -61,12 +61,15 @@ add_action( 'wp_ajax_nopriv_dolat_feedback', 'dolat_ajax_feedback' );
 function dolat_ajax_search() {
 	check_ajax_referer( 'dolat_nonce', 'nonce' );
 
-	$term = isset( $_POST['term'] ) ? sanitize_text_field( wp_unslash( $_POST['term'] ) ) : '';
+	$term  = isset( $_POST['term'] ) ? sanitize_text_field( wp_unslash( $_POST['term'] ) ) : '';
+	$scope = isset( $_POST['scope'] ) ? sanitize_key( wp_unslash( $_POST['scope'] ) ) : 'all';
 	if ( mb_strlen( $term ) < 2 ) wp_send_json_success( array( 'html' => '' ) );
+
+	$post_types = 'estelam' === $scope ? array( 'estelam' ) : array( 'post', 'estelam' );
 
 	$q = new WP_Query( array(
 		's'              => $term,
-		'post_type'      => array( 'post', 'estelam' ),
+		'post_type'      => $post_types,
 		'posts_per_page' => 8,
 		'no_found_rows'  => true,
 	) );
