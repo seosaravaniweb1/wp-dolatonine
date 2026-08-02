@@ -19,6 +19,10 @@ function dolat_current_url() {
 
 /** توضیح متا بر اساس نوع صفحه */
 function dolat_get_meta_description() {
+	if ( get_query_var( 'dolat_bookmarks' ) ) {
+		return 'استعلام‌هایی که در همین مرورگر نشان کرده‌اید.';
+	}
+
 	if ( is_singular( 'estelam' ) ) {
 		$id   = get_the_ID();
 		$desc = get_post_meta( $id, '_dolat_short_desc', true );
@@ -72,10 +76,23 @@ function dolat_get_meta_image() {
    robots: noindex برای صفحات کم‌ارزش/تکراری
 ═════════════════════════════════════════════════ */
 add_action( 'wp_head', function() {
-	if ( is_search() || is_author() || is_404() ) {
+	if ( is_search() || is_author() || is_404() || get_query_var( 'dolat_bookmarks' ) ) {
 		echo '<meta name="robots" content="noindex,follow">' . "\n";
 	}
 }, 1 );
+
+/**
+ * صفحه «استعلام‌های من» یک کوئری واقعی وردپرسی ندارد (فقط با query var سفارشی
+ * به index.php هدایت می‌شود)، پس بدون این فیلتر عنوان و توضیح صفحه اصلی رو
+ * به اشتباه نشان می‌دهد چون WP وقتی هیچ query var شناخته‌شده‌ای نبیند، پیش‌فرض
+ * صفحه اصلی را فرض می‌کند.
+ */
+add_filter( 'document_title_parts', function( $parts ) {
+	if ( get_query_var( 'dolat_bookmarks' ) ) {
+		$parts = array( 'title' => 'استعلام‌های من', 'site' => get_bloginfo( 'name' ) );
+	}
+	return $parts;
+} );
 
 /* ═════════════════════════════════════════════════
    متا description + Open Graph + Twitter Card
