@@ -79,15 +79,34 @@ add_action( 'after_switch_theme', function() {
 	flush_rewrite_rules();
 } );
 
+/* ─────────────────────────────
+   صفحه «استعلام‌های من» (بوکمارک — کاملا سمت کاربر، بدون عضویت)
+───────────────────────────── */
+add_action( 'init', function() {
+	add_rewrite_rule( '^estelam-bookmarks/?$', 'index.php?dolat_bookmarks=1', 'top' );
+} );
+
+add_filter( 'query_vars', function( $vars ) {
+	$vars[] = 'dolat_bookmarks';
+	return $vars;
+} );
+
+add_filter( 'template_include', function( $template ) {
+	if ( get_query_var( 'dolat_bookmarks' ) ) {
+		return DOLAT_THEME_DIR . '/template-bookmarks.php';
+	}
+	return $template;
+} );
+
 /**
- * فلاش خودکار قوانین بازنویسی بعد از تغییر آدرس آرشیو استعلام‌ها
- * (قبلا /estelamha/ بود، الان هماهنگ با تک‌پست‌ها /estelam/ شد)
+ * فلاش خودکار قوانین بازنویسی بعد از تغییرات ساختار لینک‌ها
+ * (estelamha -> estelam ، و افزودن /estelam-bookmarks/)
  * چون قالب از قبل فعال بوده، فقط after_switch_theme کافی نیست.
  */
 add_action( 'init', function() {
-	if ( '2' !== get_option( 'dolat_rewrite_version' ) ) {
+	if ( '3' !== get_option( 'dolat_rewrite_version' ) ) {
 		flush_rewrite_rules();
-		update_option( 'dolat_rewrite_version', '2' );
+		update_option( 'dolat_rewrite_version', '3' );
 	}
 }, 20 );
 

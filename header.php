@@ -64,16 +64,12 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m21 21-3.8-3.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 			</button>
 
-			<button type="button" class="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-dnavy dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-dgold sm:flex" aria-label="آب و هوا" title="آب و هوا">
-				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M6 17a4 4 0 0 1 .5-7.97A5.5 5.5 0 0 1 17.5 10 3.5 3.5 0 0 1 17 17H6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-			</button>
-
 			<button type="button" id="dDarkBtn" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-dnavy dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-dgold" aria-label="تغییر حالت شب و روز" title="حالت شب/روز">
 				<svg class="h-[18px] w-[18px] dark:hidden" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
 				<svg class="hidden h-[18px] w-[18px] dark:block" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 			</button>
 
-			<a href="<?php echo esc_url( home_url( '/?estelam-bookmarks' ) ); ?>" class="relative flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-dnavy dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-dgold" aria-label="استعلام‌های من (نشان‌شده‌ها)" title="استعلام‌های من">
+			<a href="<?php echo esc_url( home_url( '/estelam-bookmarks/' ) ); ?>" class="relative flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-dnavy dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-dgold" aria-label="استعلام‌های من (نشان‌شده‌ها)" title="استعلام‌های من">
 				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M6 4h12v17l-6-4-6 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
 				<span id="dBookmarkCount" class="absolute -top-0.5 -end-0.5 hidden h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">0</span>
 			</a>

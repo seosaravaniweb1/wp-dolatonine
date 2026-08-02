@@ -301,6 +301,7 @@
 			govEl.style.display = d.govShow ? '' : 'none';
 		}
 
+		updateModalBookmarkIcon(d.id);
 		resetFeedbackUI();
 	}
 
@@ -547,7 +548,87 @@
 		});
 	}
 
-	/* ---------- اسلایدر استعلام‌ها ---------- */
+	/* ---------- استعلام‌های نشان‌شده (بوکمارک، فقط localStorage همین مرورگر) ---------- */
+	var BOOKMARK_KEY = 'dolat_bookmarks';
+
+	function getBookmarks() {
+		try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); } catch (e) { return []; }
+	}
+	function saveBookmarks(arr) {
+		try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(arr)); } catch (e) {}
+		updateBookmarkCount();
+	}
+	function isBookmarked(id) {
+		return getBookmarks().indexOf(String(id)) !== -1;
+	}
+	function toggleBookmark(id) {
+		id = String(id);
+		var arr = getBookmarks();
+		var idx = arr.indexOf(id);
+		if (idx === -1) arr.push(id); else arr.splice(idx, 1);
+		saveBookmarks(arr);
+		return idx === -1; // true یعنی الان نشان شد
+	}
+	function updateBookmarkCount() {
+		var el = $('#dBookmarkCount');
+		if (!el) return;
+		var n = getBookmarks().length;
+		el.textContent = n;
+		el.classList.toggle('hidden', n === 0);
+	}
+
+	function updateModalBookmarkIcon(id) {
+		var outline = $('#mBookmarkOutline'), filled = $('#mBookmarkFilled');
+		if (!outline || !filled) return;
+		var on = isBookmarked(id);
+		outline.classList.toggle('hidden', on);
+		filled.classList.toggle('hidden', !on);
+	}
+
+	function initBookmarks() {
+		updateBookmarkCount();
+
+		var modalBtn = $('#mBookmarkBtn');
+		if (modalBtn) modalBtn.addEventListener('click', function () {
+			if (!currentEstelamId) return;
+			toggleBookmark(currentEstelamId);
+			updateModalBookmarkIcon(currentEstelamId);
+		});
+
+		$$('.d-bookmark-btn[data-estelam-id]').forEach(function (btn) {
+			var id = btn.getAttribute('data-estelam-id');
+			var outline = $('.d-bookmark-outline', btn), filled = $('.d-bookmark-filled', btn);
+			function render() {
+				var on = isBookmarked(id);
+				if (outline) outline.classList.toggle('hidden', on);
+				if (filled) filled.classList.toggle('hidden', !on);
+			}
+			render();
+			btn.addEventListener('click', function (e) {
+				e.preventDefault();
+				toggleBookmark(id);
+				render();
+			});
+		});
+	}
+
+	/* ---------- صفحه «استعلام‌های من» ---------- */
+	function initBookmarksPage() {
+		var list = $('#dBookmarksList'), empty = $('#dBookmarksEmpty');
+		if (!list) return;
+
+		var ids = getBookmarks();
+		if (!ids.length) { empty.classList.remove('hidden'); return; }
+
+		fetchAjax('dolat_get_bookmarks', { ids: ids.join(',') }).then(function (res) {
+			if (res && res.html) {
+				list.innerHTML = res.html;
+			} else {
+				empty.classList.remove('hidden');
+			}
+		});
+	}
+
 	/* ---------- تابلوی سایت‌های دولتی: توقف با نگه‌داشتن موس ---------- */
 	function initGovBoard() {
 		var board = $('#dGovBoard');
@@ -570,6 +651,8 @@
 		initHeroSearch();
 		initModal();
 		initStaticFeedback();
+		initBookmarks();
+		initBookmarksPage();
 		initFab();
 		initToc();
 		initHeadingAnchors();

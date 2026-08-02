@@ -89,3 +89,26 @@ function dolat_ajax_search() {
 }
 add_action( 'wp_ajax_dolat_search', 'dolat_ajax_search' );
 add_action( 'wp_ajax_nopriv_dolat_search', 'dolat_ajax_search' );
+
+/* کارت استعلام‌های نشان‌شده (localStorage سمت کاربر) برای صفحه «استعلام‌های من» */
+function dolat_ajax_get_bookmarks() {
+	check_ajax_referer( 'dolat_nonce', 'nonce' );
+
+	$raw = isset( $_POST['ids'] ) ? sanitize_text_field( wp_unslash( $_POST['ids'] ) ) : '';
+	$ids = array_filter( array_map( 'absint', explode( ',', $raw ) ) );
+	if ( ! $ids ) wp_send_json_success( array( 'html' => '' ) );
+
+	$q = new WP_Query( array(
+		'post_type'      => 'estelam',
+		'post__in'       => $ids,
+		'orderby'        => 'post__in',
+		'posts_per_page' => 50,
+		'no_found_rows'  => true,
+	) );
+
+	$html = '';
+	foreach ( $q->posts as $p ) $html .= dolat_render_estelam_row_card( $p->ID );
+	wp_send_json_success( array( 'html' => $html ) );
+}
+add_action( 'wp_ajax_dolat_get_bookmarks', 'dolat_ajax_get_bookmarks' );
+add_action( 'wp_ajax_nopriv_dolat_get_bookmarks', 'dolat_ajax_get_bookmarks' );

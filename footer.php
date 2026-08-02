@@ -174,6 +174,10 @@ $dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
 				<span id="mTag" class="mb-1 inline-block rounded px-2 py-0.5 text-[10px] font-bold text-white"></span>
 				<div id="mTitle" class="text-base font-black leading-relaxed text-slate-800 dark:text-white"></div>
 			</div>
+			<button type="button" id="mBookmarkBtn" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="نشان کردن">
+				<svg id="mBookmarkOutline" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M6 4h12v17l-6-4-6 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+				<svg id="mBookmarkFilled" class="hidden h-[18px] w-[18px] text-dgold" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+			</button>
 			<button type="button" id="mClose" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="بستن">✕</button>
 		</div>
 

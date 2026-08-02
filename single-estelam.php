@@ -18,6 +18,10 @@ while ( have_posts() ) : the_post();
 				<?php if ( $data['tag'] ) : ?><span class="mb-1 inline-block rounded px-2 py-0.5 text-[10px] font-bold text-white" style="background:<?php echo esc_attr( $data['tagColor'] ); ?>"><?php echo esc_html( $data['tag'] ); ?></span><?php endif; ?>
 				<h1 class="text-lg font-black leading-relaxed text-slate-800 dark:text-white sm:text-xl"><?php echo esc_html( $data['title'] ); ?></h1>
 			</div>
+			<button type="button" class="d-bookmark-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" data-estelam-id="<?php echo esc_attr( $id ); ?>" aria-label="نشان کردن">
+				<svg class="d-bookmark-outline h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M6 4h12v17l-6-4-6 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+				<svg class="d-bookmark-filled hidden h-[18px] w-[18px] text-dgold" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+			</button>
 		</div>
 
 		<?php if ( $data['video'] ) : ?>

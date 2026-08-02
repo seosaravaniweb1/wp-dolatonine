@@ -29,8 +29,6 @@ function dolat_theme_setup() {
 
 	register_nav_menus( array(
 		'primary' => __( 'منوی اصلی', 'dolat-online' ),
-		'footer'  => __( 'منوی فوتر', 'dolat-online' ),
-		'topbar'  => __( 'منوی نوار بالای سایت', 'dolat-online' ),
 	) );
 }
 add_action( 'after_setup_theme', 'dolat_theme_setup' );
