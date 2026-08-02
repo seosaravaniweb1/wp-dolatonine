@@ -492,14 +492,77 @@ function dolat_render_rank_item( $post_id, $rank ) {
 	return ob_get_clean();
 }
 
-/** تاریخ شمسی ساده برای نوار بالای سایت */
-function dolat_jalali_today() {
-	$ts = current_time( 'timestamp' );
-	if ( function_exists( 'wp_date' ) ) {
-		// اگر افزونه/هسته فارسی فعال باشد خروجی شمسی می‌شود
-		return wp_date( 'l، j F Y', $ts );
+/** تبدیل ارقام انگلیسی به فارسی */
+function dolat_to_fa_digits( $str ) {
+	static $en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+	static $fa = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
+	return str_replace( $en, $fa, (string) $str );
+}
+
+/** تبدیل تاریخ میلادی به شمسی — الگوریتم استاندارد jdf.scr.ir */
+function dolat_gregorian_to_jalali( $gy, $gm, $gd ) {
+	$g_days_in_month = array( 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
+	$j_days_in_month = array( 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 );
+
+	$gy2 = $gy - 1600;
+	$gm2 = $gm - 1;
+	$gd2 = $gd - 1;
+
+	$g_day_no = 365 * $gy2 + (int) ( ( $gy2 + 3 ) / 4 ) - (int) ( ( $gy2 + 99 ) / 100 ) + (int) ( ( $gy2 + 399 ) / 400 );
+	for ( $i = 0; $i < $gm2; $i++ ) {
+		$g_day_no += $g_days_in_month[ $i ];
 	}
-	return date_i18n( 'l، j F Y', $ts );
+	if ( $gm2 > 1 && ( ( $gy2 % 4 === 0 && $gy2 % 100 !== 0 ) || $gy2 % 400 === 0 ) ) {
+		$g_day_no++;
+	}
+	$g_day_no += $gd2;
+
+	$j_day_no = $g_day_no - 79;
+	$j_np     = (int) ( $j_day_no / 12053 );
+	$j_day_no = $j_day_no % 12053;
+
+	$jy = 979 + 33 * $j_np + 4 * (int) ( $j_day_no / 1461 );
+	$j_day_no %= 1461;
+
+	if ( $j_day_no >= 366 ) {
+		$jy += (int) ( ( $j_day_no - 1 ) / 365 );
+		$j_day_no = ( $j_day_no - 1 ) % 365;
+	}
+
+	$jm = 0;
+	for ( $i = 0; $i < 11 && $j_day_no >= $j_days_in_month[ $i ]; $i++ ) {
+		$j_day_no -= $j_days_in_month[ $i ];
+	}
+	$jm = $i + 1;
+	$jd = $j_day_no + 1;
+
+	return array( $jy, $jm, $jd );
+}
+
+function dolat_jalali_month_name( $m ) {
+	$months = array( 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند' );
+	return isset( $months[ $m - 1 ] ) ? $months[ $m - 1 ] : '';
+}
+
+/** نام روز هفته فارسی از خروجی date('w') میلادی (۰=یکشنبه) */
+function dolat_jalali_weekday_name( $w ) {
+	$days = array( 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه' );
+	return isset( $days[ $w ] ) ? $days[ $w ] : '';
+}
+
+/** تاریخ و ساعت شمسی نوار بالای سایت */
+function dolat_topbar_datetime() {
+	$ts = current_time( 'timestamp' );
+	list( $jy, $jm, $jd ) = dolat_gregorian_to_jalali( (int) date( 'Y', $ts ), (int) date( 'n', $ts ), (int) date( 'j', $ts ) );
+
+	$weekday  = dolat_jalali_weekday_name( (int) date( 'w', $ts ) );
+	$date_str = trim( $weekday . ' ' . dolat_to_fa_digits( $jd ) . ' ' . dolat_jalali_month_name( $jm ) . ' ' . dolat_to_fa_digits( $jy ) );
+
+	return array(
+		'weekday' => $weekday,
+		'date'    => $date_str,
+		'time'    => dolat_to_fa_digits( date( 'H:i', $ts ) ),
+	);
 }
 
 /** مسیر راهنما بر اساس یک ترم (برای صفحات آرشیو) */
@@ -539,6 +602,119 @@ function dolat_render_main_nav() {
 
 	echo '<li><a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '">📋 استعلام‌ها</a></li>';
 	echo '</ul>';
+}
+
+/* ═════════════════════════════════════════════════
+   مگامنوی «دسته‌بندی خدمات»
+═════════════════════════════════════════════════ */
+
+/** ستون یکی از مگامنو (استعلام‌ها / آموزش‌ها / اخبار) برای یک دسته مادر */
+function dolat_render_megamenu_column( $parent_term, $type ) {
+	$titles = array(
+		'estelam' => '📋 استعلام‌ها',
+		'edu'     => '🎓 آموزش‌ها',
+		'news'    => '📰 اخبار',
+	);
+
+	$posts     = array();
+	$more_link = '';
+
+	if ( 'estelam' === $type ) {
+		$q = new WP_Query( array(
+			'post_type'      => 'estelam',
+			'posts_per_page' => 4,
+			'no_found_rows'  => true,
+			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_term->term_id, 'include_children' => true ) ),
+		) );
+		$posts     = $q->posts;
+		$more_link = get_term_link( $parent_term );
+	} else {
+		$child = dolat_get_child_by_role( $parent_term->term_id, $type );
+		if ( $child ) {
+			$q = new WP_Query( array(
+				'post_type'      => 'post',
+				'posts_per_page' => 4,
+				'no_found_rows'  => true,
+				'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $child->term_id, 'include_children' => true ) ),
+			) );
+			$posts     = $q->posts;
+			$more_link = get_term_link( $child );
+		}
+	}
+
+	ob_start();
+	?>
+	<div class="min-w-0">
+		<h4 class="mb-3 border-b border-slate-200 pb-2 text-sm font-bold text-[#123c52] dark:border-slate-700 dark:text-[#e6d3a3]"><?php echo esc_html( $titles[ $type ] ); ?></h4>
+		<?php if ( empty( $posts ) ) : ?>
+			<p class="text-xs text-slate-400 dark:text-slate-500">موردی ثبت نشده است.</p>
+		<?php else : ?>
+			<ul class="space-y-2.5">
+				<?php foreach ( $posts as $p ) : ?>
+					<li>
+						<a href="<?php echo esc_url( get_permalink( $p ) ); ?>" class="line-clamp-1 block text-sm text-slate-600 transition hover:text-[#c39b45] dark:text-slate-300">
+							<?php echo esc_html( get_the_title( $p ) ); ?>
+						</a>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+			<?php if ( $more_link && ! is_wp_error( $more_link ) ) : ?>
+				<a href="<?php echo esc_url( $more_link ); ?>" class="mt-3 inline-block text-xs font-semibold text-[#c39b45] hover:underline">مشاهده همه ←</a>
+			<?php endif; ?>
+		<?php endif; ?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+/** ساختار کامل مگامنو: سایدبار دسته‌های مادر + ۳ ستون داینامیک */
+function dolat_render_megamenu() {
+	$parents = dolat_get_parent_categories();
+	if ( empty( $parents ) ) return '';
+
+	ob_start();
+	?>
+	<div class="flex flex-col md:flex-row" id="dMegaBody">
+		<div class="shrink-0 border-b border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-800/50 md:max-h-[28rem] md:w-64 md:overflow-y-auto md:border-b-0 md:border-s">
+			<ul class="p-2">
+				<?php foreach ( $parents as $i => $cat ) :
+					$icon  = dolat_category_icon( $cat ) ?: '📁';
+					$color = dolat_category_color( $cat );
+				?>
+				<li>
+					<button type="button"
+						class="d-mega-tab flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white hover:shadow-sm dark:text-slate-200 dark:hover:bg-slate-700 <?php echo 0 === $i ? 'is-active bg-white shadow-sm dark:bg-slate-700' : ''; ?>"
+						data-mega-tab="cat-<?php echo (int) $cat->term_id; ?>"
+						aria-controls="dMegaPanel-<?php echo (int) $cat->term_id; ?>"
+						aria-selected="<?php echo 0 === $i ? 'true' : 'false'; ?>">
+						<span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $icon ); ?></span>
+						<span class="flex-1 text-right"><?php echo esc_html( $cat->name ); ?></span>
+						<svg class="h-4 w-4 shrink-0 text-slate-400 rtl:rotate-180" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+					</button>
+				</li>
+				<?php endforeach; ?>
+				<li class="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
+					<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#123c52] hover:bg-white dark:text-[#e6d3a3] dark:hover:bg-slate-700">
+						📋 همه استعلام‌ها
+					</a>
+				</li>
+			</ul>
+		</div>
+
+		<div class="flex-1 p-5 md:p-6">
+			<?php foreach ( $parents as $i => $cat ) : ?>
+				<div id="dMegaPanel-<?php echo (int) $cat->term_id; ?>" class="d-mega-panel grid grid-cols-1 gap-6 sm:grid-cols-3 <?php echo 0 === $i ? '' : 'hidden'; ?>" data-mega-panel="cat-<?php echo (int) $cat->term_id; ?>">
+					<?php
+					echo dolat_render_megamenu_column( $cat, 'estelam' );
+					echo dolat_render_megamenu_column( $cat, 'edu' );
+					echo dolat_render_megamenu_column( $cat, 'news' );
+					?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
 }
 
 /** لینک‌های پیش‌فرض نوار بالای سایت */

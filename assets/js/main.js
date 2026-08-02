@@ -4,25 +4,18 @@
 	var $ = function (sel, ctx) { return (ctx || document).querySelector(sel); };
 	var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
 
-	/* ---------- حالت شب ---------- */
+	/* ---------- حالت شب (سینک با کلاس dark تیلویند و body.theme-dark قدیمی) ---------- */
 	function initDarkMode() {
 		var btn = $('#dDarkBtn');
 		if (!btn) return;
-		var moon = btn.querySelector('.d-icon-moon');
-		var sun = btn.querySelector('.d-icon-sun');
 
 		function applyTheme(dark) {
+			document.documentElement.classList.toggle('dark', dark);
 			document.body.classList.toggle('theme-dark', dark);
-			if (moon) moon.style.display = dark ? 'none' : '';
-			if (sun) sun.style.display = dark ? '' : 'none';
 		}
 
-		var saved = null;
-		try { saved = localStorage.getItem('dolat_theme'); } catch (e) {}
-		if (saved) applyTheme(saved === 'dark');
-
 		btn.addEventListener('click', function () {
-			var isDark = !document.body.classList.contains('theme-dark');
+			var isDark = !document.documentElement.classList.contains('dark');
 			applyTheme(isDark);
 			try { localStorage.setItem('dolat_theme', isDark ? 'dark' : 'light'); } catch (e) {}
 		});
@@ -30,10 +23,18 @@
 
 	/* ---------- منوی کشویی ---------- */
 	function initDrawer() {
-		var drawer = $('#dDrawer'), openBtn = $('#dMenuBtn'), closeBtn = $('#dDrawerClose'), overlay = $('#dDrawerOverlay');
-		if (!drawer || !openBtn) return;
-		function open() { drawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
-		function close() { drawer.classList.remove('open'); document.body.style.overflow = ''; }
+		var openBtn = $('#dMenuBtn'), closeBtn = $('#dDrawerClose'), overlay = $('#dDrawerOverlay'), panel = $('#dDrawerPanel');
+		if (!openBtn || !panel) return;
+		function open() {
+			overlay.classList.remove('hidden');
+			panel.classList.remove('translate-x-full');
+			document.body.style.overflow = 'hidden';
+		}
+		function close() {
+			overlay.classList.add('hidden');
+			panel.classList.add('translate-x-full');
+			document.body.style.overflow = '';
+		}
 		openBtn.addEventListener('click', open);
 		if (closeBtn) closeBtn.addEventListener('click', close);
 		if (overlay) overlay.addEventListener('click', close);
@@ -44,14 +45,89 @@
 		var panel = $('#dSearchPanel'), openBtn = $('#dSearchBtn'), closeBtn = $('#dSearchCloseBtn'), input = $('#dSearchInput'), results = $('#dSearchResults');
 		if (!panel || !openBtn) return;
 
-		openBtn.addEventListener('click', function () {
-			panel.classList.add('open');
+		function open() {
+			panel.classList.remove('hidden');
 			setTimeout(function () { input && input.focus(); }, 50);
-		});
-		if (closeBtn) closeBtn.addEventListener('click', function () { panel.classList.remove('open'); });
-		panel.addEventListener('click', function (e) { if (e.target === panel) panel.classList.remove('open'); });
+		}
+		function close() { panel.classList.add('hidden'); }
+
+		openBtn.addEventListener('click', open);
+		if (closeBtn) closeBtn.addEventListener('click', close);
+		panel.addEventListener('click', function (e) { if (e.target === panel) close(); });
+		document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
 		if (input) bindLiveSearch(input, results);
+	}
+
+	/* ---------- مگامنوی «دسته‌بندی خدمات» ---------- */
+	function initMegaMenu() {
+		var wrap = $('#dMegaWrap'), trigger = $('#dMegaTrigger'), panelWrap = $('#dMegaPanelWrap'), caret = $('#dMegaCaret');
+		if (!wrap || !trigger || !panelWrap) return;
+
+		var tabs = $$('.d-mega-tab', panelWrap);
+		var panels = $$('.d-mega-panel', panelWrap);
+		var closeTimer = null;
+
+		function selectTab(key) {
+			tabs.forEach(function (t) {
+				var active = t.getAttribute('data-mega-tab') === key;
+				t.classList.toggle('is-active', active);
+				t.classList.toggle('bg-white', active);
+				t.classList.toggle('dark:bg-slate-700', active);
+				t.classList.toggle('shadow-sm', active);
+				t.setAttribute('aria-selected', active ? 'true' : 'false');
+			});
+			panels.forEach(function (p) {
+				p.classList.toggle('hidden', p.getAttribute('data-mega-panel') !== key);
+			});
+		}
+
+		tabs.forEach(function (tab) {
+			var key = tab.getAttribute('data-mega-tab');
+			tab.addEventListener('mouseenter', function () { selectTab(key); });
+			tab.addEventListener('click', function () { selectTab(key); });
+			tab.addEventListener('focus', function () { selectTab(key); });
+		});
+
+		function openMenu() {
+			clearTimeout(closeTimer);
+			panelWrap.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+			trigger.setAttribute('aria-expanded', 'true');
+			if (caret) caret.classList.add('rotate-180');
+		}
+		function closeMenu() {
+			panelWrap.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+			trigger.setAttribute('aria-expanded', 'false');
+			if (caret) caret.classList.remove('rotate-180');
+		}
+		function scheduleClose() {
+			clearTimeout(closeTimer);
+			closeTimer = setTimeout(closeMenu, 150);
+		}
+
+		trigger.addEventListener('click', function () {
+			var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+			if (isOpen) { closeMenu(); } else { openMenu(); }
+		});
+		wrap.addEventListener('mouseenter', openMenu);
+		wrap.addEventListener('mouseleave', scheduleClose);
+		document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+		document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) closeMenu(); });
+	}
+
+	/* ---------- ساعت زنده نوار بالای سایت ---------- */
+	function initLiveClock() {
+		var el = $('#dLiveClock');
+		if (!el) return;
+		var faDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+		function toFa(n) { return String(n).replace(/[0-9]/g, function (d) { return faDigits[d]; }); }
+		function pad(n) { return n < 10 ? '0' + n : '' + n; }
+		function tick() {
+			var now = new Date();
+			el.textContent = toFa(pad(now.getHours())) + ':' + toFa(pad(now.getMinutes()));
+		}
+		tick();
+		setInterval(tick, 1000 * 30);
 	}
 
 	function initHeroSearch() {
@@ -459,6 +535,8 @@
 	document.addEventListener('DOMContentLoaded', function () {
 		initDarkMode();
 		initDrawer();
+		initMegaMenu();
+		initLiveClock();
 		initHeaderSearch();
 		initHeroSearch();
 		initCategoryTabs();
