@@ -39,7 +39,7 @@ function dolat_register_estelam_cpt() {
 		'show_in_menu'  => true,
 		'menu_icon'     => 'dashicons-search',
 		'menu_position' => 5,
-		'has_archive'   => 'estelamha',
+		'has_archive'   => 'estelam',
 		'rewrite'       => array( 'slug' => 'estelam', 'with_front' => false ),
 		'supports'      => array( 'title', 'thumbnail', 'excerpt', 'editor', 'comments' ),
 		'show_in_rest'  => false,
@@ -77,6 +77,27 @@ add_action( 'after_switch_theme', function() {
 	dolat_register_estelam_cpt();
 	dolat_register_estelam_tag_tax();
 	flush_rewrite_rules();
+} );
+
+/**
+ * فلاش خودکار قوانین بازنویسی بعد از تغییر آدرس آرشیو استعلام‌ها
+ * (قبلا /estelamha/ بود، الان هماهنگ با تک‌پست‌ها /estelam/ شد)
+ * چون قالب از قبل فعال بوده، فقط after_switch_theme کافی نیست.
+ */
+add_action( 'init', function() {
+	if ( '2' !== get_option( 'dolat_rewrite_version' ) ) {
+		flush_rewrite_rules();
+		update_option( 'dolat_rewrite_version', '2' );
+	}
+}, 20 );
+
+/* ریدایرکت ۳۰۱ آدرس قدیمی آرشیو استعلام‌ها (estelamha) به آدرس جدید، برای حفظ سئوی لینک‌های احتمالا ایندکس‌شده */
+add_action( 'template_redirect', function() {
+	global $wp;
+	if ( is_404() && isset( $wp->request ) && 'estelamha' === untrailingslashit( $wp->request ) ) {
+		wp_safe_redirect( get_post_type_archive_link( 'estelam' ), 301 );
+		exit;
+	}
 } );
 
 /* ═════════════════════════════════════════════════

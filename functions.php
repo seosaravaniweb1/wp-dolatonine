@@ -48,6 +48,7 @@ require_once DOLAT_THEME_DIR . '/inc/widgets.php';
 require_once DOLAT_THEME_DIR . '/inc/ads.php';
 require_once DOLAT_THEME_DIR . '/inc/reports.php';
 require_once DOLAT_THEME_DIR . '/inc/footer-settings.php';
+require_once DOLAT_THEME_DIR . '/inc/seo.php';
 
 /* ─────────────────────────────
    عرض محتوا برای embed ها
@@ -69,9 +70,27 @@ add_action( 'init', 'dolat_cleanup_head' );
 /* ─────────────────────────────
    شمارنده بازدید (برای بخش پرطرفدارترین‌ها)
 ───────────────────────────── */
+
+/** تشخیص ساده ربات‌ها/کراولرها تا آمار «پربازدیدترین‌ها» را منحرف نکنند */
+function dolat_is_probably_bot() {
+	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) ) : '';
+	if ( '' === $ua ) return true; // بدون User-Agent = به احتمال زیاد اسکریپت/ربات
+
+	$needles = array(
+		'bot', 'spider', 'crawl', 'slurp', 'mediapartners', 'facebookexternalhit',
+		'whatsapp', 'telegrambot', 'preview', 'headless', 'ahrefs', 'semrush',
+		'mj12', 'yandex', 'baiduspider', 'duckduckbot', 'petalbot', 'bytespider',
+	);
+	foreach ( $needles as $n ) {
+		if ( false !== strpos( $ua, $n ) ) return true;
+	}
+	return false;
+}
+
 function dolat_track_views( $post_id ) {
 	if ( ! is_single() ) return;
 	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) return;
+	if ( dolat_is_probably_bot() ) return;
 	if ( ! $post_id ) {
 		global $post;
 		$post_id = $post->ID;
