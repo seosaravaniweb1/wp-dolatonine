@@ -27,7 +27,8 @@ function dolat_theme_setup() {
 	add_image_size( 'dolat-icon', 80, 80, true );
 
 	register_nav_menus( array(
-		'primary' => __( 'منوی اصلی', 'dolat-online' ),
+		'primary' => __( 'منوی اصلی هدر (کنار دکمه دسته‌بندی خدمات)', 'dolat-online' ),
+		'mobile'  => __( 'منوی کشویی موبایل', 'dolat-online' ),
 	) );
 }
 add_action( 'after_setup_theme', 'dolat_theme_setup' );

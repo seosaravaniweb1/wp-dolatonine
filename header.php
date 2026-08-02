@@ -35,9 +35,14 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 
 		<!-- راست: لوگو داینامیک -->
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="flex shrink-0 items-center gap-2">
-			<?php if ( has_custom_logo() ) : ?>
-				<span class="block h-9 w-9 overflow-hidden rounded-lg [&_img]:h-full [&_img]:w-full [&_img]:object-contain md:h-10 md:w-10">
-					<?php the_custom_logo(); ?>
+			<?php
+			// the_custom_logo() خودش یک تگ <a> می‌سازد که داخل این <a> نامعتبر می‌شود،
+			// پس فقط خود تصویر لوگو را از تنظیمات «آرم سایت» می‌گیریم.
+			$dolat_logo_id = (int) get_theme_mod( 'custom_logo' );
+			?>
+			<?php if ( $dolat_logo_id ) : ?>
+				<span class="block h-10 w-auto shrink-0 md:h-12">
+					<?php echo wp_get_attachment_image( $dolat_logo_id, 'full', false, array( 'class' => 'h-full w-auto object-contain', 'alt' => esc_attr( get_bloginfo( 'name' ) ) ) ); ?>
 				</span>
 			<?php else : ?>
 				<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-dnavy text-lg text-dgold md:h-10 md:w-10">🏛</span>
@@ -95,7 +100,7 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 
 		<!-- تریگر مگامنو -->
 		<div class="relative shrink-0" id="dMegaWrap">
-			<button type="button" id="dMegaTrigger" class="flex items-center gap-2 rounded-lg bg-dgold px-4 py-2 text-sm font-bold text-dnavy shadow transition hover:brightness-105" aria-haspopup="true" aria-expanded="false" aria-controls="dMegaPanelWrap">
+			<button type="button" id="dMegaTrigger" class="flex items-center gap-2 rounded-lg bg-dgold px-4 py-2 text-sm font-bold text-white shadow transition hover:brightness-105" aria-haspopup="true" aria-expanded="false" aria-controls="dMegaPanelWrap">
 				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M4 6h7v7H4V6Zm9 0h7v7h-7V6ZM4 15h7v3H4v-3Zm9 0h7v3h-7v-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
 				<span>دسته‌بندی خدمات</span>
 				<svg id="dMegaCaret" class="h-4 w-4 transition-transform" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -107,8 +112,8 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 			</div>
 		</div>
 
-		<!-- منوی هدر وردپرس -->
-		<div class="min-w-0 flex-1 overflow-x-auto">
+		<!-- منوی هدر وردپرس (نمایش ← فهرست‌ها ← جایگاه «منوی اصلی هدر») -->
+		<div class="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 			<?php
 			wp_nav_menu( array(
 				'theme_location' => 'primary',
@@ -118,7 +123,7 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 				'depth'          => 1,
 				'link_before'    => '<span class="block rounded-lg px-3 py-2 text-slate-100 transition hover:bg-white/10 hover:text-dgold">',
 				'link_after'     => '</span>',
-				'fallback_cb'    => 'dolat_topbar_fallback',
+				'fallback_cb'    => false,
 			) );
 			?>
 		</div>
@@ -131,8 +136,10 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 	<nav class="fixed inset-y-0 right-0 z-50 w-[82%] max-w-xs translate-x-full overflow-y-auto bg-white p-4 shadow-2xl transition-transform duration-200 dark:bg-slate-900" id="dDrawerPanel">
 		<button type="button" class="mb-3 flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" id="dDrawerClose" aria-label="بستن منو">✕</button>
 		<?php
+		// اگر منوی موبایل تعیین نشده باشد، از منوی اصلی هدر استفاده می‌کند؛
+		// اگر آن هم نبود، دسته‌های مادر را خودکار نشان می‌دهد.
 		wp_nav_menu( array(
-			'theme_location' => 'primary',
+			'theme_location' => has_nav_menu( 'mobile' ) ? 'mobile' : 'primary',
 			'container'      => false,
 			'items_wrap'     => '<ul class="space-y-1 text-sm">%3$s</ul>',
 			'link_before'    => '<span class="block rounded-lg px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">',

@@ -65,9 +65,10 @@ $dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
 
 			<!-- ۳) ستون اول: درباره ما -->
 			<div>
+				<?php $dolat_flogo_id = (int) get_theme_mod( 'custom_logo' ); ?>
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="mb-3 flex items-center gap-2">
-					<?php if ( has_custom_logo() ) : ?>
-						<span class="block h-9 w-9 overflow-hidden rounded-lg [&_img]:h-full [&_img]:w-full [&_img]:object-contain"><?php the_custom_logo(); ?></span>
+					<?php if ( $dolat_flogo_id ) : ?>
+						<span class="block h-10 w-auto shrink-0"><?php echo wp_get_attachment_image( $dolat_flogo_id, 'full', false, array( 'class' => 'h-full w-auto object-contain', 'alt' => esc_attr( get_bloginfo( 'name' ) ) ) ); ?></span>
 					<?php else : ?>
 						<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-lg text-dgold">🏛</span>
 					<?php endif; ?>

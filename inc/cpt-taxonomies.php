@@ -88,8 +88,37 @@ add_action( 'init', function() {
 
 add_filter( 'query_vars', function( $vars ) {
 	$vars[] = 'dolat_bookmarks';
+	$vars[] = 'dolat_cat'; // فیلتر آرشیو استعلام‌ها بر اساس دسته مادر
 	return $vars;
 } );
+
+/* ─────────────────────────────
+   فیلتر آرشیو استعلام‌ها بر اساس دسته مادر
+   آدرس: /estelam/?dolat_cat=<شناسه دسته>
+   این همان چیزی است که لینک «مشاهده همه» ستون استعلام‌ها در مگامنو به آن اشاره می‌کند،
+   تا به‌جای آرشیو دسته (که نوشته‌ها را نشان می‌دهد) لیست واقعی استعلام‌های همان بخش بیاید.
+───────────────────────────── */
+add_action( 'pre_get_posts', function( $query ) {
+	if ( is_admin() || ! $query->is_main_query() ) return;
+	if ( ! $query->is_post_type_archive( 'estelam' ) ) return;
+
+	$cat_id = (int) $query->get( 'dolat_cat' );
+	if ( ! $cat_id ) return;
+
+	$query->set( 'tax_query', array(
+		array(
+			'taxonomy'         => 'category',
+			'field'            => 'term_id',
+			'terms'            => $cat_id,
+			'include_children' => true,
+		),
+	) );
+} );
+
+/** آدرس لیست استعلام‌های یک دسته مادر */
+function dolat_estelam_archive_link_for_cat( $term_id ) {
+	return add_query_arg( 'dolat_cat', (int) $term_id, get_post_type_archive_link( 'estelam' ) );
+}
 
 add_filter( 'template_include', function( $template ) {
 	if ( get_query_var( 'dolat_bookmarks' ) ) {

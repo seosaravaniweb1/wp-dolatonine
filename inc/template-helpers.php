@@ -653,8 +653,9 @@ function dolat_render_megamenu_column( $parent_term, $type ) {
 			'no_found_rows'  => true,
 			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_term->term_id, 'include_children' => true ) ),
 		) );
-		$posts     = $q->posts;
-		$more_link = get_term_link( $parent_term );
+		$posts = $q->posts;
+		// لیست واقعی استعلام‌های همین دسته، نه آرشیو دسته که نوشته‌ها را نشان می‌دهد
+		$more_link = dolat_estelam_archive_link_for_cat( $parent_term->term_id );
 	} else {
 		$child = dolat_get_child_by_role( $parent_term->term_id, $type );
 		if ( $child ) {
@@ -743,13 +744,6 @@ function dolat_render_megamenu() {
 	<?php
 	return ob_get_clean();
 }
-
-/** لینک‌های پیش‌فرض نوار بالای سایت */
-function dolat_topbar_fallback() {
-	echo '<a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '">همه استعلام‌ها</a>';
-	echo '<a href="https://my.gov.ir" target="_blank" rel="noopener">دولت هوشمند</a>';
-}
-
 
 /** برچسب دکمه لینک اصلی — اگر خالی باشد از دامنه سایت ساخته می‌شود */
 function dolat_estelam_link_label( $post_id ) {
@@ -943,7 +937,11 @@ function dolat_get_categories_for_estelam_tag( $tag_term_id ) {
 function dolat_get_sidebar_news( $count = 4 ) {
 	$args = array( 'post_type' => 'post', 'posts_per_page' => $count, 'no_found_rows' => true );
 
-	if ( is_tax( 'estelam_tag' ) ) {
+	// وقتی آرشیو استعلام با فیلتر دسته مادر باز شده، اخبار همان دسته را نشان بده
+	$filter_cat_id = (int) get_query_var( 'dolat_cat' );
+	if ( $filter_cat_id ) {
+		$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $filter_cat_id, 'include_children' => true ) );
+	} elseif ( is_tax( 'estelam_tag' ) ) {
 		$term    = get_queried_object();
 		$cat_ids = $term ? dolat_get_categories_for_estelam_tag( $term->term_id ) : array();
 		if ( $cat_ids ) {

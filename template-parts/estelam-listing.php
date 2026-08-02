@@ -5,10 +5,18 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$is_archive   = is_post_type_archive( 'estelam' );
-$queried_tag  = is_tax( 'estelam_tag' ) ? get_queried_object() : null;
+$is_archive  = is_post_type_archive( 'estelam' );
+$queried_tag = is_tax( 'estelam_tag' ) ? get_queried_object() : null;
 
-if ( $is_archive ) {
+// فیلتر دسته مادر (از لینک «مشاهده همه» مگامنو می‌آید): /estelam/?dolat_cat=<id>
+$filter_cat_id = (int) get_query_var( 'dolat_cat' );
+$filter_cat    = $filter_cat_id ? get_term( $filter_cat_id, 'category' ) : null;
+if ( is_wp_error( $filter_cat ) ) $filter_cat = null;
+
+if ( $filter_cat ) {
+	$hero_title = 'استعلام‌های ' . $filter_cat->name;
+	$hero_desc  = 'همه استعلام‌ها و خدمات الکترونیکی بخش ' . $filter_cat->name;
+} elseif ( $is_archive ) {
 	$hero_title = 'آموزش و لیستینگ جامع استعلام‌های دولتی';
 	$hero_desc  = 'مرکز جامع آموزش، دسترسی و لیستینگ تمامی استعلام‌ها و راهنمای خدمات دولتی…';
 } else {
@@ -17,8 +25,12 @@ if ( $is_archive ) {
 	$hero_desc  = $term_desc ? wp_strip_all_tags( $term_desc ) : 'همه استعلام‌های مرتبط با ' . $queried_tag->name;
 }
 
-$top_items    = dolat_get_top_estelam_scoped( $queried_tag, 5 );
-$tag_terms    = $is_archive ? get_terms( array( 'taxonomy' => 'estelam_tag', 'hide_empty' => true ) ) : array();
+$top_items = $filter_cat
+	? dolat_get_popular_in_category( $filter_cat->term_id, 'estelam', 5 )
+	: dolat_get_top_estelam_scoped( $queried_tag, 5 );
+
+// تب‌های برچسب فقط در آرشیو کلی و بدون فیلتر دسته
+$tag_terms = ( $is_archive && ! $filter_cat ) ? get_terms( array( 'taxonomy' => 'estelam_tag', 'hide_empty' => true ) ) : array();
 $live_comments = dolat_get_live_comments( 4 );
 $sidebar_news  = dolat_get_sidebar_news( 4 );
 ?>
@@ -35,6 +47,9 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 			<?php if ( $queried_tag ) : ?>
 				<span>›</span>
 				<span class="text-slate-300"><?php echo esc_html( $queried_tag->name ); ?></span>
+			<?php elseif ( $filter_cat ) : ?>
+				<span>›</span>
+				<span class="text-slate-300"><?php echo esc_html( $filter_cat->name ); ?></span>
 			<?php endif; ?>
 		</nav>
 
@@ -95,7 +110,14 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 				<?php if ( have_posts() ) : while ( have_posts() ) : the_post();
 					echo dolat_render_estelam_row_card( get_the_ID() );
 				endwhile; else : ?>
-					<div class="col-span-full rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">استعلامی یافت نشد.</div>
+					<div class="col-span-full rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">
+					<?php if ( $filter_cat ) : ?>
+						هنوز استعلامی به بخش «<?php echo esc_html( $filter_cat->name ); ?>» اختصاص داده نشده است.
+						<span class="mt-2 block text-xs">در صفحه ویرایش هر استعلام، از باکس «دسته مادر» در ستون کناری، تیک این دسته را بزنید تا اینجا نمایش داده شود.</span>
+					<?php else : ?>
+						استعلامی یافت نشد.
+					<?php endif; ?>
+				</div>
 				<?php endif; ?>
 			</div>
 
