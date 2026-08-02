@@ -1,23 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-/* بارگذاری محتوای یک تب از یک دسته (all/news/edu/estelam) */
-function dolat_ajax_load_tab() {
-	check_ajax_referer( 'dolat_nonce', 'nonce' );
-
-	$cat = isset( $_POST['cat'] ) ? sanitize_title( wp_unslash( $_POST['cat'] ) ) : '';
-	$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : 'news';
-	$count = isset( $_POST['count'] ) ? absint( $_POST['count'] ) : 6;
-	$count = min( max( $count, 1 ), 30 );
-
-	if ( ! $cat ) wp_send_json_error( 'دسته نامعتبر' );
-
-	$html = dolat_get_category_tab_html( $cat, $tab, $count );
-	wp_send_json_success( array( 'html' => $html ) );
-}
-add_action( 'wp_ajax_dolat_load_tab', 'dolat_ajax_load_tab' );
-add_action( 'wp_ajax_nopriv_dolat_load_tab', 'dolat_ajax_load_tab' );
-
 /* داده کامل استعلام برای نمایش در پاپ‌آپ */
 function dolat_ajax_get_estelam() {
 	check_ajax_referer( 'dolat_nonce', 'nonce' );
@@ -75,16 +58,17 @@ function dolat_ajax_search() {
 	) );
 
 	if ( ! $q->have_posts() ) {
-		wp_send_json_success( array( 'html' => '<div class="d-search-empty">نتیجه‌ای یافت نشد.</div>' ) );
+		wp_send_json_success( array( 'html' => '<div class="p-4 text-center text-xs text-slate-400">نتیجه‌ای یافت نشد.</div>' ) );
 	}
 
-	$html = '';
+	$row_cls = 'flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 text-sm text-slate-700 last:border-0 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
+	$html    = '';
 	foreach ( $q->posts as $p ) {
 		$is_estelam = 'estelam' === $p->post_type;
 		$icon = $is_estelam ? ( get_post_meta( $p->ID, '_dolat_icon', true ) ?: '📋' ) : '📰';
 		$url  = $is_estelam ? '#' : get_permalink( $p->ID );
-		$attr = $is_estelam ? ' data-estelam-id="' . esc_attr( $p->ID ) . '" class="d-search-result d-open-estelam"' : ' class="d-search-result"';
-		$html .= '<a href="' . esc_url( $url ) . '"' . $attr . '><span>' . esc_html( $icon ) . '</span><span>' . esc_html( get_the_title( $p->ID ) ) . '</span></a>';
+		$attr = $is_estelam ? ' data-estelam-id="' . esc_attr( $p->ID ) . '"' : '';
+		$html .= '<a href="' . esc_url( $url ) . '"' . $attr . ' class="' . esc_attr( $row_cls ) . '"><span>' . esc_html( $icon ) . '</span><span class="line-clamp-1">' . esc_html( get_the_title( $p->ID ) ) . '</span></a>';
 	}
 	wp_send_json_success( array( 'html' => $html ) );
 }

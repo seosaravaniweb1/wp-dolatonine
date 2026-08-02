@@ -44,7 +44,6 @@ require_once DOLAT_THEME_DIR . '/inc/enqueue.php';
 require_once DOLAT_THEME_DIR . '/inc/ajax-handlers.php';
 require_once DOLAT_THEME_DIR . '/inc/template-helpers.php';
 require_once DOLAT_THEME_DIR . '/inc/customizer.php';
-require_once DOLAT_THEME_DIR . '/inc/widgets.php';
 require_once DOLAT_THEME_DIR . '/inc/ads.php';
 require_once DOLAT_THEME_DIR . '/inc/reports.php';
 require_once DOLAT_THEME_DIR . '/inc/footer-settings.php';

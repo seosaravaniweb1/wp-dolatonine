@@ -37,7 +37,7 @@ $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌ه�
 					<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m21 21-3.8-3.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 				</button>
 			</div>
-			<div id="dHeroSearchResults" class="mx-auto mt-2 max-w-xl overflow-hidden rounded-lg text-right empty:hidden"></div>
+			<div id="dHeroSearchResults" class="mx-auto mt-2 max-w-xl overflow-hidden rounded-lg bg-white text-right shadow-lg empty:hidden dark:bg-slate-900"></div>
 
 			<!-- دسترسی سریع: ۵ پربازدیدترین استعلام -->
 			<?php if ( $quick_access ) : ?>

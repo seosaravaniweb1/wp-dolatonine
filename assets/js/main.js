@@ -223,35 +223,6 @@
 		});
 	}
 
-	/* ---------- تب‌های دسته‌بندی (AJAX) ---------- */
-	function initCategoryTabs() {
-		$$('.d-cat-block').forEach(function (block) {
-			var cat = block.getAttribute('data-cat');
-			var content = block.querySelector('.d-tab-content');
-			var tabs = $$('.d-tab', block);
-			tabs.forEach(function (tab) {
-				tab.addEventListener('click', function () {
-					var target = tab.getAttribute('data-tab');
-					if (tab.classList.contains('active')) return;
-					tabs.forEach(function (t) { t.classList.remove('active'); });
-					tab.classList.add('active');
-
-					if (content.getAttribute('data-loaded-tab') === target) return;
-
-					content.classList.add('loading');
-					var count = block.getAttribute('data-count') || 6;
-					fetchAjax('dolat_load_tab', { cat: cat, tab: target, count: count }).then(function (res) {
-						content.classList.remove('loading');
-						if (res && res.html) {
-							content.innerHTML = res.html;
-							content.setAttribute('data-loaded-tab', target);
-						}
-					});
-				});
-			});
-		});
-	}
-
 	/* ---------- کمک: فراخوانی AJAX ---------- */
 	function fetchAjax(action, data) {
 		var body = new URLSearchParams();
@@ -278,7 +249,7 @@
 			currentEstelamId = id;
 			fillModal(data);
 			var overlay = $('#dOverlay');
-			overlay.classList.add('open');
+			overlay.classList.remove('hidden');
 			document.body.style.overflow = 'hidden';
 		});
 	}
@@ -337,7 +308,7 @@
 	function setHtml(sel, val) { var el = $(sel); if (el) el.textContent = val || ''; }
 
 	function closeModal() {
-		$('#dOverlay').classList.remove('open');
+		$('#dOverlay').classList.add('hidden');
 		document.body.style.overflow = '';
 		currentEstelamId = null;
 	}
@@ -366,8 +337,8 @@
 	function resetFeedbackUI() {
 		var wrap = $('#mFeedbackWrap');
 		if (!wrap) return;
-		$('#mFbWorks').classList.remove('picked');
-		$('#mFbBroken').classList.remove('picked');
+		$('#mFbWorks').classList.remove('opacity-40', 'pointer-events-none');
+		$('#mFbBroken').classList.remove('opacity-40', 'pointer-events-none');
 		$('#mFbDescWrap').style.display = 'none';
 		$('#mFbDesc').value = '';
 		$('#mFbDone').style.display = 'none';
@@ -378,11 +349,11 @@
 		var worksBtn = $('#mFbWorks'), brokenBtn = $('#mFbBroken'), submitBtn = $('#mFbSubmit');
 		if (worksBtn) worksBtn.addEventListener('click', function () {
 			if (!currentEstelamId) return;
-			worksBtn.classList.add('picked');
+			worksBtn.classList.add('opacity-40', 'pointer-events-none');
 			sendFeedback(currentEstelamId, 'works').then(showFeedbackDone);
 		});
 		if (brokenBtn) brokenBtn.addEventListener('click', function () {
-			brokenBtn.classList.add('picked');
+			brokenBtn.classList.add('opacity-40', 'pointer-events-none');
 			$('#mFbDescWrap').style.display = 'block';
 		});
 		if (submitBtn) submitBtn.addEventListener('click', function () {
@@ -410,11 +381,11 @@
 			var descWrap = $('.d-feedback-desc-wrap', box), descInput = $('.d-fb-desc', box), submitBtn = $('.d-fb-submit', box), doneEl = $('.d-feedback-done', box), buttonsRow = $('.d-feedback-buttons', box);
 
 			if (worksBtn) worksBtn.addEventListener('click', function () {
-				worksBtn.classList.add('picked');
+				worksBtn.classList.add('opacity-40', 'pointer-events-none');
 				sendFeedback(id, 'works').then(function () { finishStatic(); });
 			});
 			if (brokenBtn) brokenBtn.addEventListener('click', function () {
-				brokenBtn.classList.add('picked');
+				brokenBtn.classList.add('opacity-40', 'pointer-events-none');
 				descWrap.style.display = 'block';
 			});
 			if (submitBtn) submitBtn.addEventListener('click', function () {
@@ -433,7 +404,7 @@
 		var fab = $('#dFabTop');
 		if (!fab) return;
 		window.addEventListener('scroll', function () {
-			fab.classList.toggle('show', window.scrollY > 400);
+			fab.classList.toggle('hidden', window.scrollY <= 400);
 		});
 		fab.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 	}
@@ -446,12 +417,15 @@
 
 		var head = $('.d-toc-head', toc);
 		var list = $('#dTocList');
+		var caret = $('#dTocCaret');
 		var links = $$('.d-toc-list a', toc);
 
 		// باز و بسته کردن
 		if (head && list) {
 			head.addEventListener('click', function () {
 				var closed = toc.classList.toggle('collapsed');
+				list.classList.toggle('hidden', closed);
+				if (caret) caret.classList.toggle('-rotate-90', closed);
 				head.setAttribute('aria-expanded', closed ? 'false' : 'true');
 			});
 		}
@@ -481,7 +455,11 @@
 				if (headings[i].offsetTop <= pos) currentId = headings[i].id;
 			}
 			links.forEach(function (l) {
-				l.parentNode.classList.toggle('active', l.getAttribute('data-target') === currentId);
+				var active = l.getAttribute('data-target') === currentId;
+				l.classList.toggle('bg-slate-50', active);
+				l.classList.toggle('dark:bg-slate-700', active);
+				l.classList.toggle('text-dgold', active);
+				l.classList.toggle('font-bold', active);
 			});
 			ticking = false;
 		}
@@ -530,11 +508,14 @@
 		}
 
 		tabsEl.innerHTML = steps.map(function (s, i) {
-			return '<button class="d-steptab' + (i === 0 ? ' active' : '') + '" data-step="' + i + '">' +
-				'<span class="d-step-num">' + (i + 1) + '</span><span class="d-steptab-title"></span></button>';
+			var stateCls = i === 0
+				? 'bg-dnavy text-white'
+				: 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300';
+			return '<button type="button" class="d-steptab flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition ' + stateCls + '" data-step="' + i + '">' +
+				'<span class="flex h-5 w-5 items-center justify-center rounded-full bg-black/10 text-[11px]">' + (i + 1) + '</span><span class="d-steptab-title"></span></button>';
 		}).join('');
 		panesEl.innerHTML = steps.map(function (s, i) {
-			return '<div class="d-steppane' + (i === 0 ? ' active' : '') + '" data-step="' + i + '"></div>';
+			return '<div class="d-steppane rounded-lg bg-slate-50 p-3 text-sm leading-relaxed text-slate-600 dark:bg-slate-900 dark:text-slate-300' + (i === 0 ? '' : ' hidden') + '" data-step="' + i + '"></div>';
 		}).join('');
 
 		$$('.d-steptab-title', tabsEl).forEach(function (el, i) { el.textContent = steps[i].title || ('مرحله ' + (i + 1)); });
@@ -549,35 +530,24 @@
 		tabs.forEach(function (tab) {
 			tab.addEventListener('click', function () {
 				var idx = tab.getAttribute('data-step');
-				tabs.forEach(function (t) { t.classList.remove('active'); });
-				panes.forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-step') === idx); });
-				tab.classList.add('active');
-			});
-		});
-	}
-
-	/* ---------- اسلایدر استعلام‌ها ---------- */
-	function initSliders() {
-		$$('.d-slider').forEach(function (slider) {
-			var track = $('.d-slider-track', slider);
-			if (!track) return;
-			var section = slider.closest('section') || slider.parentNode;
-			var btns = $$('.d-slider-btn', section);
-
-			function step() {
-				var card = track.querySelector('.d-slide');
-				return card ? card.offsetWidth + 12 : 240;
-			}
-			btns.forEach(function (btn) {
-				btn.addEventListener('click', function () {
-					var dir = btn.getAttribute('data-dir') === 'next' ? 1 : -1;
-					// در چیدمان راست‌به‌چپ، جهت اسکرول معکوس است
-					slider.scrollBy({ left: dir * step() * -1, behavior: 'smooth' });
+				tabs.forEach(function (t) {
+					var active = t === tab;
+					t.classList.toggle('bg-dnavy', active);
+					t.classList.toggle('text-white', active);
+					t.classList.toggle('bg-slate-100', !active);
+					t.classList.toggle('text-slate-500', !active);
+					t.classList.toggle('hover:bg-slate-200', !active);
+					t.classList.toggle('dark:bg-slate-700', !active);
+					t.classList.toggle('dark:text-slate-300', !active);
+				});
+				panes.forEach(function (p) {
+					p.classList.toggle('hidden', p.getAttribute('data-step') !== idx);
 				});
 			});
 		});
 	}
 
+	/* ---------- اسلایدر استعلام‌ها ---------- */
 	/* ---------- تابلوی سایت‌های دولتی: توقف با نگه‌داشتن موس ---------- */
 	function initGovBoard() {
 		var board = $('#dGovBoard');
@@ -598,14 +568,12 @@
 		initHeaderSearch();
 		initEstelamArchiveSearch();
 		initHeroSearch();
-		initCategoryTabs();
 		initModal();
 		initStaticFeedback();
 		initFab();
 		initToc();
 		initHeadingAnchors();
 		initCardKeyboard();
-		initSliders();
 		initGovBoard();
 		$$('.d-single-estelam .d-modal-static').forEach(bindStepTabs);
 	});

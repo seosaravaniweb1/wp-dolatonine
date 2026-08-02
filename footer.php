@@ -161,66 +161,70 @@ $dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
 	</div>
 </footer>
 
-<button class="d-fab" id="dFabTop" aria-label="بازگشت به بالا">↑</button>
+<button type="button" id="dFabTop" class="fixed bottom-5 start-5 z-40 hidden h-11 w-11 items-center justify-center rounded-full bg-dnavy text-lg text-dgold shadow-lg transition hover:brightness-110" aria-label="بازگشت به بالا">↑</button>
 
 <!-- پاپ‌آپ استعلام (مشترک بین تمام صفحات) -->
-<div class="d-overlay" id="dOverlay">
-	<div class="d-modal">
-		<div class="d-modal-handle"></div>
-		<div class="d-modal-top">
-			<div class="d-modal-icon" id="mIcon"></div>
-			<div>
-				<span class="d-modal-tag" id="mTag"></span>
-				<div class="d-modal-title" id="mTitle"></div>
+<div id="dOverlay" class="fixed inset-0 z-[100] hidden items-end justify-center bg-black/60 sm:items-center sm:p-4">
+	<div class="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white dark:bg-slate-900 sm:max-w-lg sm:rounded-2xl">
+		<div class="mx-auto mt-2 h-1 w-11 rounded-full bg-slate-200 dark:bg-slate-700 sm:hidden"></div>
+
+		<div class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+			<div id="mIcon" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-100 text-2xl dark:border-slate-700"></div>
+			<div class="min-w-0 flex-1">
+				<span id="mTag" class="mb-1 inline-block rounded px-2 py-0.5 text-[10px] font-bold text-white"></span>
+				<div id="mTitle" class="text-base font-black leading-relaxed text-slate-800 dark:text-white"></div>
 			</div>
-			<button class="d-modal-close" id="mClose">✕</button>
+			<button type="button" id="mClose" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="بستن">✕</button>
 		</div>
 
-		<div class="d-modal-video-wrap" id="mVideoWrap" style="display:none;">
-			<div class="d-modal-video-label">آموزش ویدیویی</div>
-			<div class="d-modal-video-frame"><iframe id="mVideo" src="" frameborder="0" allowfullscreen></iframe></div>
+		<div id="mVideoWrap" class="mx-5 mt-4" style="display:none;">
+			<div class="mb-2 text-[11px] font-bold tracking-wide text-slate-400">آموزش ویدیویی</div>
+			<div class="relative overflow-hidden rounded-xl bg-black pb-[56.25%]">
+				<iframe id="mVideo" class="absolute inset-0 h-full w-full border-0" src="" frameborder="0" allowfullscreen></iframe>
+			</div>
 		</div>
-		<div class="d-modal-novideo" id="mNoVideo">
-			<span class="d-modal-novideo-tag">📋 استعلام</span>
-			<div class="d-modal-novideo-title" id="mNoVideoTitle"></div>
-			<div class="d-modal-novideo-sub">راهنمای کامل مراحل را در پایین مطالعه کنید</div>
-		</div>
-
-		<div class="d-modal-desc" id="mDesc"></div>
-
-		<div class="d-modal-section">
-			<div class="d-modal-section-title">مراحل استعلام</div>
-			<div class="d-steptabs" id="mStepTabs"></div>
-			<div class="d-steppanes" id="mStepPanes"></div>
+		<div id="mNoVideo" class="mx-5 mt-4 rounded-xl bg-dnavy p-5 text-center">
+			<span class="mb-2 block text-[11px] font-bold tracking-wide text-dgold">📋 استعلام</span>
+			<div id="mNoVideoTitle" class="mb-1 text-base font-black leading-relaxed text-white"></div>
+			<div class="text-xs text-slate-300">راهنمای کامل مراحل را در پایین مطالعه کنید</div>
 		</div>
 
-		<div class="d-notice" id="mNotice" style="display:none;"><span>⚠️</span><span id="mNoticeText"></span></div>
+		<div id="mDesc" class="mx-5 mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm leading-loose text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"></div>
 
+		<div class="px-5 pt-4">
+			<div class="mb-3 text-[11px] font-bold tracking-wide text-slate-400">مراحل استعلام</div>
+			<div id="mStepTabs" class="mb-3 flex flex-wrap gap-1.5"></div>
+			<div id="mStepPanes"></div>
+		</div>
 
-		<div class="d-modal-footer">
-			<a id="mLink" href="#" target="_blank" rel="noopener" class="d-modal-link-primary">رفتن به سایت رسمی ←</a>
-			<a id="mGovLink" href="#" target="_blank" rel="noopener" class="d-modal-link-secondary">🏛️ ورود از طریق دولت هوشمند (my.gov.ir)</a>
+		<div id="mNotice" class="mx-5 mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300" style="display:none;">
+			<span>⚠️</span><span id="mNoticeText"></span>
+		</div>
 
-			<div class="d-feedback-box" id="mFeedbackWrap">
-				<div class="d-feedback-question">آیا این لینک‌ها کار می‌کنند؟</div>
-				<div class="d-feedback-buttons">
-					<button id="mFbWorks" class="d-fb-works">✅ بله، کار می‌کنه</button>
-					<button id="mFbBroken" class="d-fb-broken">❌ کار نمی‌کنه</button>
+		<div class="flex flex-col gap-2 p-5">
+			<a id="mLink" href="#" target="_blank" rel="noopener" class="rounded-xl bg-dnavy py-3 text-center text-sm font-bold text-white transition hover:bg-[#0d2c3d]">رفتن به سایت رسمی ←</a>
+			<a id="mGovLink" href="#" target="_blank" rel="noopener" class="rounded-xl border border-dgold/50 bg-dgold/10 py-3 text-center text-sm font-bold text-dnavy transition hover:bg-dgold/20 dark:text-dgold">🏛️ ورود از طریق دولت هوشمند (my.gov.ir)</a>
+
+			<div id="mFeedbackWrap" class="mt-2 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+				<div class="mb-3 text-center text-xs text-slate-500 dark:text-slate-400">آیا این لینک‌ها کار می‌کنند؟</div>
+				<div class="d-feedback-buttons flex gap-2">
+					<button type="button" id="mFbWorks" class="d-fb-btn flex-1 rounded-lg border border-emerald-200 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-950">✅ بله، کار می‌کنه</button>
+					<button type="button" id="mFbBroken" class="d-fb-btn flex-1 rounded-lg border border-red-200 py-2 text-xs font-bold text-red-700 transition hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950">❌ کار نمی‌کنه</button>
 				</div>
-				<div class="d-feedback-desc-wrap" id="mFbDescWrap" style="display:none;">
-					<label class="d-fb-label">مشکل از چه نوعی است؟</label>
-					<select id="mFbProblem" class="d-fb-select">
+				<div id="mFbDescWrap" class="mt-3 space-y-2" style="display:none;">
+					<label class="block text-xs font-bold text-slate-600 dark:text-slate-300">مشکل از چه نوعی است؟</label>
+					<select id="mFbProblem" class="w-full rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
 						<option value="down">سایت بالا نمی‌آید یا خطا می‌دهد</option>
 						<option value="moved">آدرس سایت عوض شده است</option>
 						<option value="login">ورود یا احراز هویت کار نمی‌کند</option>
 						<option value="steps">مراحل با سایت مطابقت ندارد</option>
 						<option value="other">مورد دیگر</option>
 					</select>
-					<label class="d-fb-label">توضیح بیشتر (اختیاری ولی خیلی کمک می‌کند)</label>
-					<textarea id="mFbDesc" maxlength="300" placeholder="مثلا: بعد از وارد کردن کد ملی، صفحه خطای ۵۰۰ می‌دهد."></textarea>
-					<button id="mFbSubmit">ارسال گزارش 🔧</button>
+					<label class="block text-xs font-bold text-slate-600 dark:text-slate-300">توضیح بیشتر (اختیاری ولی خیلی کمک می‌کند)</label>
+					<textarea id="mFbDesc" maxlength="300" placeholder="مثلا: بعد از وارد کردن کد ملی، صفحه خطای ۵۰۰ می‌دهد." class="min-h-20 w-full rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"></textarea>
+					<button type="button" id="mFbSubmit" class="w-full rounded-lg bg-dnavy py-2 text-xs font-bold text-white hover:brightness-110">ارسال گزارش 🔧</button>
 				</div>
-				<div class="d-feedback-done" id="mFbDone" style="display:none;">ممنون از بازخورد شما 🙏</div>
+				<div id="mFbDone" class="mt-2 text-center text-xs font-bold text-emerald-600" style="display:none;">ممنون از بازخورد شما 🙏</div>
 			</div>
 		</div>
 	</div>

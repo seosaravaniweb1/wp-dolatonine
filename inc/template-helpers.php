@@ -83,19 +83,19 @@ function dolat_render_estelam_card( $post_id ) {
 	$badge_meta = $badge ? dolat_badge_meta( $badge ) : null;
 	ob_start();
 	?>
-	<div class="d-card" data-estelam-id="<?php echo esc_attr( $post_id ); ?>" role="button" tabindex="0">
-		<div class="d-card-icon" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>;"><?php echo esc_html( $icon ); ?></div>
-		<div class="d-card-body">
+	<div class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-dgold/50 hover:shadow-md dark:border-slate-700 dark:bg-slate-800" data-estelam-id="<?php echo esc_attr( $post_id ); ?>" role="button" tabindex="0">
+		<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>;"><?php echo esc_html( $icon ); ?></div>
+		<div class="min-w-0 flex-1">
 			<?php if ( $tag ) : ?>
-				<span class="d-card-tag" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $tag ); ?></span>
+				<span class="mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold text-white" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $tag ); ?></span>
 			<?php endif; ?>
 			<?php if ( $badge_meta ) : ?>
-				<span class="d-card-badge"><?php echo esc_html( $badge_meta['emoji'] . ' ' . $badge_meta['label'] ); ?></span>
+				<span class="mb-1 ms-1 inline-block text-[10px] font-bold text-amber-600"><?php echo esc_html( $badge_meta['emoji'] . ' ' . $badge_meta['label'] ); ?></span>
 			<?php endif; ?>
-			<h3><?php echo esc_html( $title ); ?></h3>
-			<?php if ( $desc ) : ?><p><?php echo esc_html( $desc ); ?></p><?php endif; ?>
+			<h3 class="line-clamp-1 text-sm font-bold text-slate-800 dark:text-slate-100"><?php echo esc_html( $title ); ?></h3>
+			<?php if ( $desc ) : ?><p class="line-clamp-1 text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( $desc ); ?></p><?php endif; ?>
 		</div>
-		<div class="d-card-arrow">‹</div>
+		<div class="shrink-0 text-lg text-slate-300 dark:text-slate-600">‹</div>
 	</div>
 	<?php
 	return ob_get_clean();
@@ -120,15 +120,22 @@ function dolat_render_post_card( $post_id ) {
 	$thumb = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'dolat-card' ) : '';
 	ob_start();
 	?>
-	<article class="d-news-card" style="border-inline-start:3px solid <?php echo esc_attr( $color ); ?>">
-		<div class="d-news-head">
-			<?php if ( $label ) : ?><span class="d-news-badge" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $label ); ?></span><?php endif; ?>
-			<span class="d-news-date">📅 <?php echo esc_html( $date ); ?></span>
-		</div>
-		<h3 class="d-news-title"><a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"><?php echo esc_html( $title ); ?></a></h3>
-		<?php if ( $excerpt ) : ?><p class="d-news-summary"><?php echo esc_html( $excerpt ); ?></p><?php endif; ?>
-		<div class="d-news-footer">
-			<a class="d-btn-outline" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>">ادامه مطلب ←</a>
+	<article class="flex gap-4 rounded-xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-4" style="border-inline-start:3px solid <?php echo esc_attr( $color ); ?>">
+		<?php if ( $thumb ) : ?>
+			<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700 sm:h-24 sm:w-28">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( $title ); ?>" class="h-full w-full object-cover" loading="lazy">
+			</a>
+		<?php endif; ?>
+		<div class="min-w-0 flex-1">
+			<div class="mb-2 flex items-center gap-2">
+				<?php if ( $label ) : ?><span class="rounded px-1.5 py-0.5 text-[10px] font-bold text-white" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $label ); ?></span><?php endif; ?>
+				<span class="text-[11px] text-slate-400">📅 <?php echo esc_html( $date ); ?></span>
+			</div>
+			<h3 class="line-clamp-1 text-sm font-bold text-slate-800 dark:text-slate-100"><a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="hover:text-dnavy dark:hover:text-dgold"><?php echo esc_html( $title ); ?></a></h3>
+			<?php if ( $excerpt ) : ?><p class="mt-1.5 line-clamp-2 text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( $excerpt ); ?></p><?php endif; ?>
+			<div class="mt-3">
+				<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="inline-block rounded-lg border border-dnavy px-3 py-1.5 text-xs font-bold text-dnavy transition hover:bg-dnavy hover:text-white dark:border-dgold dark:text-dgold dark:hover:bg-dgold dark:hover:text-dnavy">ادامه مطلب ←</a>
+			</div>
 		</div>
 	</article>
 	<?php
@@ -184,51 +191,6 @@ function dolat_get_cat_tabs( $parent_id ) {
 	if ( $has_estelam->have_posts() ) $tabs[] = array( 'key' => 'estelam', 'label' => 'استعلام‌ها' );
 
 	return $tabs;
-}
-
-/**
- * محتوای یک تب از یک دسته مادر
- * $tab : all | news | edu | estelam
- */
-function dolat_get_category_tab_html( $cat_slug, $tab = 'news', $count = 5 ) {
-	$term = get_term_by( 'slug', $cat_slug, 'category' );
-	if ( ! $term ) return '<div class="d-empty">دسته‌ای یافت نشد.</div>';
-
-	/* ── تب استعلام‌ها ── */
-	if ( 'estelam' === $tab ) {
-		$q = new WP_Query( array(
-			'post_type'      => 'estelam',
-			'posts_per_page' => $count,
-			'no_found_rows'  => true,
-			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $term->term_id, 'include_children' => true ) ),
-		) );
-		if ( ! $q->have_posts() ) return '<div class="d-empty">هنوز استعلامی برای این بخش ثبت نشده است.</div>';
-
-		$html = '<div class="d-cards">';
-		foreach ( $q->posts as $p ) $html .= dolat_render_estelam_card( $p->ID );
-		return $html . '</div>';
-	}
-
-	/* ── تب اخبار یا آموزش: فقط عنوان و تاریخ ── */
-	$child = dolat_get_child_by_role( $term->term_id, $tab );
-	if ( ! $child ) {
-		$name = 'news' === $tab ? 'اخبار' : 'آموزش';
-		return '<div class="d-empty">زیردسته «' . esc_html( $name ) . '» برای این بخش تعریف نشده است.</div>';
-	}
-
-	$q = new WP_Query( array(
-		'post_type'      => 'post',
-		'posts_per_page' => $count,
-		'no_found_rows'  => true,
-		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $child->term_id, 'include_children' => true ) ),
-	) );
-	if ( ! $q->have_posts() ) return '<div class="d-empty">هنوز مطلبی در این زیردسته منتشر نشده است.</div>';
-
-	$html = '<ul class="d-list">';
-	foreach ( $q->posts as $p ) $html .= dolat_render_compact_item( $p->ID );
-	$html .= '</ul>';
-	$html .= '<a class="d-list-more" href="' . esc_url( get_term_link( $child ) ) . '">همه مطالب ' . esc_html( $child->name ) . ' ←</a>';
-	return $html;
 }
 
 /* داده کامل استعلام برای پاپ‌آپ */
@@ -382,15 +344,20 @@ function dolat_render_toc( $items ) {
 
 	ob_start();
 	?>
-	<nav class="d-toc" id="dToc" aria-label="فهرست مطالب">
-		<button class="d-toc-head" type="button" aria-expanded="true" aria-controls="dTocList">
+	<nav id="dToc" class="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800" aria-label="فهرست مطالب">
+		<button class="d-toc-head flex w-full items-center justify-between gap-2 px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200" type="button" aria-expanded="true" aria-controls="dTocList">
 			<span>📑 فهرست مطالب</span>
-			<span class="d-toc-caret">▾</span>
+			<span id="dTocCaret" class="text-slate-400 transition-transform">▾</span>
 		</button>
-		<ol class="d-toc-list" id="dTocList">
-			<?php foreach ( $items as $it ) : ?>
-				<li class="d-toc-item d-toc-lvl-<?php echo esc_attr( $it['level'] - $min ); ?>">
-					<a href="#<?php echo esc_attr( $it['id'] ); ?>" data-target="<?php echo esc_attr( $it['id'] ); ?>"><?php echo esc_html( $it['text'] ); ?></a>
+		<ol id="dTocList" class="d-toc-list space-y-0.5 border-t border-slate-100 px-3 py-2 dark:border-slate-700">
+			<?php foreach ( $items as $it ) :
+				$depth  = $it['level'] - $min;
+				$indent = $depth >= 2 ? 'ps-10' : ( 1 === $depth ? 'ps-6' : 'ps-2' );
+			?>
+				<li>
+					<a href="#<?php echo esc_attr( $it['id'] ); ?>" data-target="<?php echo esc_attr( $it['id'] ); ?>" class="block rounded-lg <?php echo esc_attr( $indent ); ?> py-1.5 text-[13px] text-slate-600 transition hover:bg-slate-50 hover:text-dgold dark:text-slate-300 dark:hover:bg-slate-700">
+						<?php echo esc_html( $it['text'] ); ?>
+					</a>
 				</li>
 			<?php endforeach; ?>
 		</ol>
@@ -412,12 +379,14 @@ function dolat_breadcrumb( $post_id = null ) {
 		}
 	}
 
-	echo '<nav class="d-breadcrumb"><a href="' . esc_url( home_url( '/' ) ) . '">خانه</a>';
+	$link_cls = 'text-slate-500 hover:text-dgold dark:text-slate-400';
+	echo '<nav class="mb-3 flex flex-wrap items-center gap-1.5 text-xs">';
+	echo '<a href="' . esc_url( home_url( '/' ) ) . '" class="' . esc_attr( $link_cls ) . '">خانه</a>';
 	if ( $root ) {
-		echo '<span>›</span><a href="' . esc_url( get_term_link( $root ) ) . '">' . esc_html( $root->name ) . '</a>';
+		echo '<span class="text-slate-300 dark:text-slate-600">›</span><a href="' . esc_url( get_term_link( $root ) ) . '" class="' . esc_attr( $link_cls ) . '">' . esc_html( $root->name ) . '</a>';
 	}
 	if ( $sub ) {
-		echo '<span>›</span><a href="' . esc_url( get_term_link( $sub ) ) . '">' . esc_html( $sub->name ) . '</a>';
+		echo '<span class="text-slate-300 dark:text-slate-600">›</span><a href="' . esc_url( get_term_link( $sub ) ) . '" class="' . esc_attr( $link_cls ) . '">' . esc_html( $sub->name ) . '</a>';
 	}
 	echo '</nav>';
 }
@@ -427,26 +396,28 @@ function dolat_breadcrumb( $post_id = null ) {
  * دسته‌های مادر + زیردسته‌هایشان
  */
 function dolat_default_menu() {
-	$parents = dolat_get_parent_categories();
-	echo '<ul class="d-drawer-menu">';
-	echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">🏠 خانه</a></li>';
+	$parents  = dolat_get_parent_categories();
+	$item_cls = 'block rounded-lg px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
+
+	echo '<ul class="space-y-1 text-sm">';
+	echo '<li><a href="' . esc_url( home_url( '/' ) ) . '" class="' . esc_attr( $item_cls ) . '">🏠 خانه</a></li>';
 
 	foreach ( $parents as $cat ) {
 		$icon = dolat_category_icon( $cat );
-		echo '<li class="d-menu-parent"><a href="' . esc_url( get_term_link( $cat ) ) . '">' . ( $icon ? esc_html( $icon ) . ' ' : '' ) . esc_html( $cat->name ) . '</a>';
+		echo '<li><a href="' . esc_url( get_term_link( $cat ) ) . '" class="' . esc_attr( $item_cls ) . '">' . ( $icon ? esc_html( $icon ) . ' ' : '' ) . esc_html( $cat->name ) . '</a>';
 
 		$children = get_terms( array( 'taxonomy' => 'category', 'parent' => $cat->term_id, 'hide_empty' => false ) );
 		if ( $children && ! is_wp_error( $children ) ) {
-			echo '<ul class="d-drawer-submenu">';
+			echo '<ul class="ms-4 space-y-1 border-s border-slate-100 ps-2 dark:border-slate-700">';
 			foreach ( $children as $ch ) {
-				echo '<li><a href="' . esc_url( get_term_link( $ch ) ) . '">' . esc_html( $ch->name ) . '</a></li>';
+				echo '<li><a href="' . esc_url( get_term_link( $ch ) ) . '" class="block rounded-lg px-3 py-2 text-xs text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">' . esc_html( $ch->name ) . '</a></li>';
 			}
 			echo '</ul>';
 		}
 		echo '</li>';
 	}
 
-	echo '<li><a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '">📋 همه استعلام‌ها</a></li>';
+	echo '<li><a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '" class="' . esc_attr( $item_cls ) . '">📋 همه استعلام‌ها</a></li>';
 	echo '</ul>';
 }
 
@@ -793,41 +764,6 @@ function dolat_estelam_link_label( $post_id ) {
 	return 'سایت رسمی';
 }
 
-/**
- * ردیف فشرده نوشته: فقط عنوان و تاریخ
- * برای تب‌های اخبار و آموزش در باکس‌های صفحه اصلی
- */
-function dolat_render_compact_item( $post_id ) {
-	ob_start();
-	?>
-	<li class="d-list-item">
-		<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="d-list-link"><?php echo esc_html( get_the_title( $post_id ) ); ?></a>
-		<span class="d-list-date"><?php echo esc_html( get_the_date( 'j F Y', $post_id ) ); ?></span>
-	</li>
-	<?php
-	return ob_get_clean();
-}
-
-/** کارت اسلایدی استعلام برای کاروسل بالای صفحه */
-function dolat_render_estelam_slide( $post_id ) {
-	$icon  = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
-	$desc  = get_post_meta( $post_id, '_dolat_short_desc', true );
-	$views = (int) get_post_meta( $post_id, 'dolat_post_views', true );
-	$terms = get_the_terms( $post_id, 'estelam_tag' );
-	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
-	$color = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
-	ob_start();
-	?>
-	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="d-slide" data-estelam-id="<?php echo esc_attr( $post_id ); ?>">
-		<span class="d-slide-icon" style="background:<?php echo esc_attr( $color ); ?>1f;color:<?php echo esc_attr( $color ); ?>;border-color:<?php echo esc_attr( $color ); ?>66;"><?php echo esc_html( $icon ); ?></span>
-		<span class="d-slide-title"><?php echo esc_html( get_the_title( $post_id ) ); ?></span>
-		<?php if ( $desc ) : ?><span class="d-slide-desc"><?php echo esc_html( wp_trim_words( $desc, 8, '…' ) ); ?></span><?php endif; ?>
-		<?php if ( $views > 0 ) : ?><span class="d-slide-views"><?php echo esc_html( number_format_i18n( $views ) ); ?> بازدید</span><?php endif; ?>
-	</a>
-	<?php
-	return ob_get_clean();
-}
-
 /** پربازدیدترین استعلام‌های کل سایت */
 function dolat_get_top_estelam( $count = 6 ) {
 	$q = new WP_Query( array(
@@ -841,19 +777,6 @@ function dolat_get_top_estelam( $count = 6 ) {
 	if ( ! $q->have_posts() ) {
 		$q = new WP_Query( array( 'post_type' => 'estelam', 'posts_per_page' => $count, 'no_found_rows' => true ) );
 	}
-	return $q->posts;
-}
-
-/** استعلام‌های نشان‌دار «مهم» */
-function dolat_get_important_estelam( $count = 8 ) {
-	$q = new WP_Query( array(
-		'post_type'      => 'estelam',
-		'posts_per_page' => $count,
-		'no_found_rows'  => true,
-		'meta_query'     => array(
-			array( 'key' => '_dolat_badge', 'value' => array( 'important', 'hot' ), 'compare' => 'IN' ),
-		),
-	) );
 	return $q->posts;
 }
 
