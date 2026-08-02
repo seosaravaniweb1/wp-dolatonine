@@ -86,6 +86,41 @@ function dolat_is_probably_bot() {
 	return false;
 }
 
+/**
+ * آی‌پی واقعی بازدیدکننده (با در نظر گرفتن هدرهای رایج CDN/پراکسی)
+ * فقط برای محدودسازی نرخ درخواست و ضدتکرار استفاده می‌شود، نه تصمیم‌های امنیتی حساس
+ */
+function dolat_get_client_ip() {
+	foreach ( array( 'HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR' ) as $key ) {
+		if ( empty( $_SERVER[ $key ] ) ) continue;
+		$ip = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
+		if ( false !== strpos( $ip, ',' ) ) $ip = trim( explode( ',', $ip )[0] );
+		if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) return $ip;
+	}
+	return '';
+}
+
+/**
+ * محدودسازی سادهٔ نرخ درخواست بر پایه آی‌پی، با Transient
+ * هر بار صدا زدن یک واحد از سهمیه را مصرف می‌کند
+ *
+ * @param string $action نام یکتای عملیات (مثلا 'feedback')
+ * @param int    $max    حداکثر تعداد مجاز در بازه
+ * @param int    $window طول بازه به ثانیه
+ * @return bool true یعنی مجاز است، false یعنی از سهمیه گذشته
+ */
+function dolat_rate_limit_check( $action, $max, $window ) {
+	$ip = dolat_get_client_ip();
+	if ( ! $ip ) return true; // بدون آی‌پی قابل‌اتکا، محدود نمی‌کنیم که کاربر واقعی بلاک نشود
+
+	$key   = 'dolat_rl_' . $action . '_' . md5( $ip );
+	$count = (int) get_transient( $key );
+	if ( $count >= $max ) return false;
+
+	set_transient( $key, $count + 1, $window );
+	return true;
+}
+
 function dolat_track_views( $post_id ) {
 	if ( ! is_single() ) return;
 	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) return;
@@ -94,6 +129,15 @@ function dolat_track_views( $post_id ) {
 		global $post;
 		$post_id = $post->ID;
 	}
+
+	// جلوگیری از شمارش بازدید تکراری همان بازدیدکننده در یک بازه کوتاه (رفرش/اسکریپت)
+	$ip = dolat_get_client_ip();
+	if ( $ip ) {
+		$seen_key = 'dolat_view_seen_' . $post_id . '_' . md5( $ip );
+		if ( get_transient( $seen_key ) ) return;
+		set_transient( $seen_key, 1, 30 * MINUTE_IN_SECONDS );
+	}
+
 	$count_key = 'dolat_post_views';
 	$count = (int) get_post_meta( $post_id, $count_key, true );
 	$count++;

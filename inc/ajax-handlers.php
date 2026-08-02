@@ -18,12 +18,27 @@ add_action( 'wp_ajax_nopriv_dolat_get_estelam', 'dolat_ajax_get_estelam' );
 function dolat_ajax_feedback() {
 	check_ajax_referer( 'dolat_nonce', 'nonce' );
 
+	// محدودسازی کلی: حداکثر ۱۰ بازخورد در ساعت برای هر آی‌پی (جلوگیری از اسپم اسکریپتی)
+	if ( ! dolat_rate_limit_check( 'feedback', 10, HOUR_IN_SECONDS ) ) {
+		wp_send_json_error( 'تعداد درخواست‌های شما زیاد بوده. کمی بعد دوباره امتحان کنید.' );
+	}
+
 	$id     = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
 	$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
 	$desc   = isset( $_POST['desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['desc'] ) ) : '';
 
 	if ( ! $id || 'estelam' !== get_post_type( $id ) || ! in_array( $status, array( 'works', 'broken' ), true ) ) {
 		wp_send_json_error( 'درخواست نامعتبر' );
+	}
+
+	// ضدتکرار: هر آی‌پی برای یک استعلام مشخص، فقط یک‌بار در روز شمرده می‌شود
+	$ip = dolat_get_client_ip();
+	if ( $ip ) {
+		$dup_key = 'dolat_fb_seen_' . $id . '_' . md5( $ip );
+		if ( get_transient( $dup_key ) ) {
+			wp_send_json_error( 'بازخورد شما برای این استعلام قبلا ثبت شده است.' );
+		}
+		set_transient( $dup_key, 1, DAY_IN_SECONDS );
 	}
 
 	$meta_key = 'works' === $status ? '_dolat_fb_works' : '_dolat_fb_broken';
