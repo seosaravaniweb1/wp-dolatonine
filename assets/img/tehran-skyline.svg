@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 200" preserveAspectRatio="xMidYMax slice" role="img" aria-label="خط آسمان تهران">
+  <title>خط آسمان تهران</title>
+
+  <!-- ══ پس‌زمینه: رشته‌کوه البرز ══ -->
+  <path d="M0 200v-46l70-42 54 32 48-28 62 36 46-26 58 34 52-30 60 35 48-28 66 38 54-31 62 36 50-29 58 34 56-32 64 37 52-30 60 35 46-27 54 31 60-35 50 29v107H0Z"
+        fill="#c3d5e2" opacity=".30"/>
+
+  <!-- قله دماوند -->
+  <g opacity=".42">
+    <path d="M150 200 262 44l112 156H150Z" fill="#c3d5e2"/>
+    <path d="M262 44l38 53-18-6-14 11-15-10-13 8-14-9 36-47Z" fill="#fff"/>
+  </g>
+
+  <!-- ══ بافت شهری میانی ══ -->
+  <g fill="#cddded" opacity=".60">
+    <rect x="30" y="140" width="62" height="60"/>
+    <rect x="98" y="118" width="46" height="82"/>
+    <rect x="404" y="132" width="56" height="68"/>
+    <rect x="466" y="152" width="44" height="48"/>
+    <rect x="596" y="126" width="50" height="74"/>
+    <rect x="652" y="150" width="42" height="50"/>
+    <rect x="852" y="138" width="58" height="62"/>
+    <rect x="916" y="120" width="44" height="80"/>
+    <rect x="1128" y="134" width="54" height="66"/>
+    <rect x="1188" y="154" width="46" height="46"/>
+    <rect x="1320" y="128" width="50" height="72"/>
+  </g>
+
+  <!-- ══ نشانه‌های شاخص ══ -->
+  <g fill="#eef4f9">
+
+    <!-- برج آزادی: طاق بلند با پایه‌های منحنی و تاج پلکانی -->
+    <g transform="translate(452 85)">
+      <path fill-rule="evenodd"
+            d="M0 115V98C5 60 25 27 57 8h36c32 19 52 52 57 90v17H0Z
+               M41 115V94C45 70 57 50 75 38c18 12 30 32 34 56v21H41Z"/>
+      <rect x="57" y="0" width="36" height="10"/>
+      <rect x="64" y="-7" width="22" height="7"/>
+    </g>
+
+    <!-- برج میلاد -->
+    <g transform="translate(700 12)">
+      <path d="M2 188h56l-11-26H13L2 188Z"/>
+      <path d="M17 162h26l-5-84H22l-5 84Z"/>
+      <path d="M30 78 2 62l10-16 8-8h20l8 8 10 16-28 16Z"/>
+      <path d="M25 46h10l-2-12h-6l-2 12Z"/>
+      <rect x="28" y="4" width="4" height="30"/>
+      <circle cx="30" cy="4" r="4"/>
+    </g>
+
+    <!-- ساختمان‌های اداری میانی -->
+    <rect x="790" y="112" width="34" height="88"/>
+    <path d="M830 200v-74l24-14 24 14v74h-48Z"/>
+
+    <!-- پل طبیعت -->
+    <g transform="translate(986 128)">
+      <path d="M0 30C34 4 92 4 126 30v7C92 13 34 13 0 37v-7Z"/>
+      <rect x="22" y="33" width="6" height="39"/>
+      <rect x="98" y="33" width="6" height="39"/>
+      <rect x="0" y="66" width="126" height="6"/>
+    </g>
+
+    <!-- برج‌های مدرن -->
+    <rect x="1146" y="96" width="32" height="104"/>
+    <path d="M1186 200v-84l26-16 26 16v84h-52Z"/>
+
+    <!-- دکل مخابراتی -->
+    <g transform="translate(1258 70)">
+      <path d="M10 130 2 130 15 24h6l13 106h-8l-9-72h-0l-9 72Z"/>
+      <rect x="16" y="0" width="4" height="24"/>
+      <path d="M6 56h24v5H6zM3 88h30v5H3z"/>
+    </g>
+
+    <!-- گنبد و مناره -->
+    <g transform="translate(1366 120)">
+      <!-- گنبد نوک‌تیز روی ساقه -->
+      <path d="M26 80V54c0-16 8-30 18-38 10 8 18 22 18 38v26H26Z"/>
+      <rect x="42" y="8" width="4" height="10"/>
+      <!-- مناره -->
+      <rect x="6" y="30" width="9" height="50"/>
+      <path d="M10.5 16c4 4 6 8 6 12H4.5c0-4 2-8 6-12Z"/>
+      <rect x="4" y="28" width="13" height="4"/>
+      <!-- سکو -->
+      <rect x="0" y="74" width="70" height="6"/>
+    </g>
+  </g>
+</svg>

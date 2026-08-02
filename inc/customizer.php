@@ -44,12 +44,5 @@ function dolat_customize_register( $wp_customize ) {
 		'type'    => 'checkbox',
 	) );
 
-	$wp_customize->add_setting( 'dolat_contact_phone', array( 'default' => '', 'sanitize_callback' => 'sanitize_text_field' ) );
-	$wp_customize->add_control( 'dolat_contact_phone', array(
-		'label'       => 'شماره تماس (آیکون تماس در نوار بالای سایت)',
-		'description' => 'اگر خالی بماند، آیکون تماس غیرفعال نمایش داده می‌شود.',
-		'section'     => 'dolat_hero_section',
-		'type'        => 'text',
-	) );
 }
 add_action( 'customize_register', 'dolat_customize_register' );

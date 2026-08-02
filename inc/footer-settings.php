@@ -1,135 +1,282 @@
 <?php
 /**
- * تنظیمات فوتر — از طریق سفارشی‌سازی وردپرس (Theme Customizer)
- * درباره ما، شبکه‌های اجتماعی، دسترسی سریع، اپلیکیشن، تماس
+ * تنظیمات فوتر — یک پنل مدیریت مستقل
+ * درباره ما، شبکه‌های اجتماعی (نامحدود)، دسترسی سریع (تا ۵ لینک)، دکمه اپلیکیشن، تماس
+ * همه در آپشن dolat_footer ذخیره می‌شود.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-/**
- * تبدیل متن چندخطی به آرایه لینک
- * هر خط: عنوان | آدرس | آیکون(اختیاری)
- */
-function dolat_parse_links( $raw ) {
+/** خواندن یک مقدار از تنظیمات فوتر */
+function dolat_footer_opt( $key, $default = '' ) {
+	$o = get_option( 'dolat_footer', array() );
+	if ( ! is_array( $o ) ) $o = array();
+	return ( isset( $o[ $key ] ) && '' !== $o[ $key ] && array() !== $o[ $key ] ) ? $o[ $key ] : $default;
+}
+
+/** شبکه‌های اجتماعی: آرایه‌ای از [icon, url] */
+function dolat_footer_socials() {
+	$rows = dolat_footer_opt( 'socials', array() );
+	return is_array( $rows ) ? $rows : array();
+}
+
+/** لینک‌های دسترسی سریع: آرایه‌ای از [title, url] (حداکثر ۵) */
+function dolat_footer_quick_links() {
+	$rows = dolat_footer_opt( 'quick', array() );
+	if ( ! is_array( $rows ) ) return array();
+
 	$out = array();
-	foreach ( preg_split( '/\r\n|\r|\n/', (string) $raw ) as $line ) {
-		$line = trim( $line );
-		if ( '' === $line ) continue;
-		$parts = array_map( 'trim', explode( '|', $line ) );
-		$out[] = array(
-			'label' => $parts[0] ?? '',
-			'url'   => $parts[1] ?? '#',
-			'icon'  => $parts[2] ?? '',
-		);
+	foreach ( $rows as $r ) {
+		$title = isset( $r['title'] ) ? trim( $r['title'] ) : '';
+		$url   = isset( $r['url'] ) ? trim( $r['url'] ) : '';
+		if ( '' === $title && '' === $url ) continue;
+		$out[] = array( 'label' => $title, 'url' => $url ?: '#' );
 	}
-	return $out;
+	return array_slice( $out, 0, 5 );
 }
 
 /* ═════════════════════════════════════════════════
-   پنل «فوتر» در سفارشی‌سازی وردپرس
+   صفحه مدیریت
 ═════════════════════════════════════════════════ */
-function dolat_footer_customize_register( $wp_customize ) {
-	$wp_customize->add_panel( 'dolat_footer_panel', array(
-		'title'    => 'فوتر سایت',
-		'priority' => 160,
-	) );
+add_action( 'admin_menu', function() {
+	add_menu_page(
+		'تنظیمات فوتر',
+		'تنظیمات فوتر',
+		'manage_options',
+		'dolat-footer',
+		'dolat_render_footer_page',
+		'dashicons-align-center',
+		27
+	);
+} );
 
-	/* ── درباره ما ── */
-	$wp_customize->add_section( 'dolat_footer_about', array(
-		'title' => 'فوتر — درباره ما',
-		'panel' => 'dolat_footer_panel',
-	) );
+add_action( 'admin_enqueue_scripts', function( $hook ) {
+	if ( 'toplevel_page_dolat-footer' === $hook ) wp_enqueue_media();
+} );
 
-	$wp_customize->add_setting( 'dolat_footer_about_text', array(
-		'default'           => get_bloginfo( 'description' ),
-		'sanitize_callback' => 'sanitize_textarea_field',
-	) );
-	$wp_customize->add_control( 'dolat_footer_about_text', array(
-		'label'   => 'متن کوتاه درباره ما',
-		'section' => 'dolat_footer_about',
-		'type'    => 'textarea',
-	) );
+function dolat_render_footer_page() {
+	if ( ! current_user_can( 'manage_options' ) ) return;
 
-	$wp_customize->add_setting( 'dolat_footer_socials', array(
-		'default'           => '',
-		'sanitize_callback' => 'sanitize_textarea_field',
-	) );
-	$wp_customize->add_control( 'dolat_footer_socials', array(
-		'label'       => 'شبکه‌های اجتماعی',
-		'description' => 'هر خط یک شبکه: نام | آدرس | آیکون (اموجی یا آدرس تصویر لوگو). مثال: تلگرام | https://t.me/xxx | ✈️ — هر تعداد خط که بخواهید اضافه کنید.',
-		'section'     => 'dolat_footer_about',
-		'type'        => 'textarea',
-	) );
+	if ( isset( $_POST['dolat_footer_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dolat_footer_nonce'] ) ), 'dolat_footer_save' ) ) {
+		$new = array(
+			'about_text' => isset( $_POST['about_text'] ) ? sanitize_textarea_field( wp_unslash( $_POST['about_text'] ) ) : '',
+			'phone'      => isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '',
+			'email'      => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '',
+			'app_label'  => isset( $_POST['app_label'] ) ? sanitize_text_field( wp_unslash( $_POST['app_label'] ) ) : '',
+			'app_url'    => isset( $_POST['app_url'] ) ? esc_url_raw( wp_unslash( $_POST['app_url'] ) ) : '',
+			'socials'    => array(),
+			'quick'      => array(),
+		);
 
-	/* ── دسترسی سریع ── */
-	$wp_customize->add_section( 'dolat_footer_quick', array(
-		'title' => 'فوتر — دسترسی سریع',
-		'panel' => 'dolat_footer_panel',
-	) );
+		foreach ( (array) ( isset( $_POST['social'] ) ? wp_unslash( $_POST['social'] ) : array() ) as $r ) {
+			$icon = isset( $r['icon'] ) ? sanitize_text_field( $r['icon'] ) : '';
+			$url  = isset( $r['url'] ) ? esc_url_raw( $r['url'] ) : '';
+			if ( '' === $icon && '' === $url ) continue;
+			$new['socials'][] = array( 'icon' => $icon, 'url' => $url );
+		}
 
-	for ( $i = 1; $i <= 5; $i++ ) {
-		$wp_customize->add_setting( "dolat_footer_quick_{$i}", array(
-			'default'           => '',
-			'sanitize_callback' => 'sanitize_text_field',
-		) );
-		$wp_customize->add_control( "dolat_footer_quick_{$i}", array(
-			'label'       => "لینک دسترسی سریع #{$i}",
-			'description' => 'قالب: عنوان | آدرس — مثال: صفحه اصلی | ' . home_url( '/' ),
-			'section'     => 'dolat_footer_quick',
-			'type'        => 'text',
-		) );
+		foreach ( (array) ( isset( $_POST['quick'] ) ? wp_unslash( $_POST['quick'] ) : array() ) as $r ) {
+			$title = isset( $r['title'] ) ? sanitize_text_field( $r['title'] ) : '';
+			$url   = isset( $r['url'] ) ? esc_url_raw( $r['url'] ) : '';
+			if ( '' === $title && '' === $url ) continue;
+			$new['quick'][] = array( 'title' => $title, 'url' => $url );
+		}
+		$new['quick'] = array_slice( $new['quick'], 0, 5 );
+
+		update_option( 'dolat_footer', $new );
+		echo '<div class="notice notice-success is-dismissible"><p>تنظیمات فوتر ذخیره شد.</p></div>';
 	}
 
-	$wp_customize->add_setting( 'dolat_footer_app_label', array(
-		'default'           => 'دانلود اپلیکیشن ما',
-		'sanitize_callback' => 'sanitize_text_field',
-	) );
-	$wp_customize->add_control( 'dolat_footer_app_label', array(
-		'label'   => 'متن دکمه دانلود اپلیکیشن',
-		'section' => 'dolat_footer_quick',
-		'type'    => 'text',
-	) );
+	$about   = dolat_footer_opt( 'about_text', get_bloginfo( 'description' ) );
+	$phone   = dolat_footer_opt( 'phone' );
+	$email   = dolat_footer_opt( 'email' );
+	$app_lbl = dolat_footer_opt( 'app_label', 'دانلود اپلیکیشن ما' );
+	$app_url = dolat_footer_opt( 'app_url' );
 
-	$wp_customize->add_setting( 'dolat_footer_app_url', array(
-		'default'           => '',
-		'sanitize_callback' => 'esc_url_raw',
-	) );
-	$wp_customize->add_control( 'dolat_footer_app_url', array(
-		'label'   => 'آدرس دانلود اپلیکیشن',
-		'section' => 'dolat_footer_quick',
-		'type'    => 'url',
-	) );
+	$socials = dolat_footer_socials();
+	if ( empty( $socials ) ) $socials = array( array( 'icon' => '', 'url' => '' ) );
 
-	/* ── تماس ── */
-	$wp_customize->add_section( 'dolat_footer_contact', array(
-		'title' => 'فوتر — تماس',
-		'panel' => 'dolat_footer_panel',
-	) );
+	$quick = dolat_footer_opt( 'quick', array() );
+	if ( empty( $quick ) ) $quick = array( array( 'title' => '', 'url' => '' ) );
 
-	$wp_customize->add_setting( 'dolat_contact_email', array(
-		'default'           => '',
-		'sanitize_callback' => 'sanitize_email',
-	) );
-	$wp_customize->add_control( 'dolat_contact_email', array(
-		'label'       => 'ایمیل تماس',
-		'description' => 'شماره تماس از «سفارشی‌سازی ← بخش هدر / صفحه اصلی» خوانده می‌شود (همان شماره‌ای که در نوار بالای سایت استفاده می‌شود).',
-		'section'     => 'dolat_footer_contact',
-		'type'        => 'email',
-	) );
+	$box = 'background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:16px;margin-bottom:18px;';
+	?>
+	<div class="wrap">
+		<h1>تنظیمات فوتر</h1>
+		<p style="max-width:780px;line-height:2;">
+			لوگوی فوتر همان «آرم سایت» در <a href="<?php echo esc_url( admin_url( 'customize.php' ) ); ?>">سفارشی‌سازی ← هویت سایت</a> است.
+			بقیه محتوای فوتر از همین صفحه مدیریت می‌شود.
+		</p>
+
+		<form method="post">
+			<?php wp_nonce_field( 'dolat_footer_save', 'dolat_footer_nonce' ); ?>
+
+			<!-- درباره ما -->
+			<div style="<?php echo esc_attr( $box ); ?>">
+				<h2 style="margin-top:0;">۱) درباره ما (متن زیر لوگو)</h2>
+				<textarea name="about_text" rows="4" style="width:100%;max-width:720px;" placeholder="توضیح کوتاه درباره سایت…"><?php echo esc_textarea( $about ); ?></textarea>
+			</div>
+
+			<!-- شبکه‌های اجتماعی -->
+			<div style="<?php echo esc_attr( $box ); ?>">
+				<h2 style="margin-top:0;">۲) شبکه‌های اجتماعی</h2>
+				<p class="description" style="margin-bottom:10px;">
+					آیکون می‌تواند یک <strong>اموجی</strong> باشد (مثل ✈️ یا 📷) یا با دکمه «انتخاب تصویر» یک لوگو آپلود کنید.
+					با «+ افزودن شبکه» هر تعداد که خواستید اضافه کنید.
+				</p>
+
+				<div id="dSocialRows">
+					<?php foreach ( $socials as $i => $r ) :
+						$icon = isset( $r['icon'] ) ? $r['icon'] : '';
+						$isimg = $icon && preg_match( '#^https?://#', $icon );
+					?>
+					<div class="dsoc-row" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;">
+						<div style="width:74px;text-align:center;">
+							<div class="dsoc-preview" style="width:46px;height:46px;margin:0 auto 5px;border:1px dashed #c3c4c7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;background:#f6f7f7;">
+								<?php if ( $isimg ) : ?><img src="<?php echo esc_url( $icon ); ?>" style="max-width:100%;max-height:100%;object-fit:contain;">
+								<?php elseif ( $icon ) : ?><?php echo esc_html( $icon ); ?>
+								<?php else : ?><span style="color:#a7aaad;font-size:10px;">آیکون</span><?php endif; ?>
+							</div>
+							<button type="button" class="button button-small dsoc-pick">انتخاب تصویر</button>
+						</div>
+						<div style="width:150px;">
+							<label style="display:block;font-weight:600;margin-bottom:4px;">آیکون</label>
+							<input type="text" class="dsoc-icon" name="social[<?php echo (int) $i; ?>][icon]" value="<?php echo esc_attr( $icon ); ?>" style="width:100%;" placeholder="✈️ یا آدرس تصویر">
+						</div>
+						<div style="flex:1;min-width:0;">
+							<label style="display:block;font-weight:600;margin-bottom:4px;">لینک</label>
+							<input type="url" name="social[<?php echo (int) $i; ?>][url]" value="<?php echo esc_attr( isset( $r['url'] ) ? $r['url'] : '' ); ?>" style="width:100%;" placeholder="https://t.me/example">
+						</div>
+						<button type="button" class="button dsoc-remove" style="color:#b32d2e;">✕</button>
+					</div>
+					<?php endforeach; ?>
+				</div>
+				<button type="button" class="button" id="dSocialAdd">+ افزودن شبکه</button>
+			</div>
+
+			<!-- دسترسی سریع -->
+			<div style="<?php echo esc_attr( $box ); ?>">
+				<h2 style="margin-top:0;">۳) دسترسی سریع (حداکثر ۵ لینک)</h2>
+				<div id="dQuickRows">
+					<?php foreach ( $quick as $i => $r ) : ?>
+					<div class="dq-row" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;">
+						<div style="flex:1;min-width:0;">
+							<label style="display:block;font-weight:600;margin-bottom:4px;">عنوان</label>
+							<input type="text" name="quick[<?php echo (int) $i; ?>][title]" value="<?php echo esc_attr( isset( $r['title'] ) ? $r['title'] : '' ); ?>" style="width:100%;" placeholder="مثلا صفحه اصلی">
+						</div>
+						<div style="flex:1;min-width:0;">
+							<label style="display:block;font-weight:600;margin-bottom:4px;">لینک</label>
+							<input type="url" name="quick[<?php echo (int) $i; ?>][url]" value="<?php echo esc_attr( isset( $r['url'] ) ? $r['url'] : '' ); ?>" style="width:100%;" placeholder="<?php echo esc_attr( home_url( '/' ) ); ?>">
+						</div>
+						<button type="button" class="button dq-remove" style="color:#b32d2e;">✕</button>
+					</div>
+					<?php endforeach; ?>
+				</div>
+				<button type="button" class="button" id="dQuickAdd">+ افزودن لینک</button>
+				<span id="dQuickMax" class="description" style="margin-inline-start:8px;color:#b32d2e;display:none;">حداکثر ۵ لینک.</span>
+			</div>
+
+			<!-- دکمه اپلیکیشن -->
+			<div style="<?php echo esc_attr( $box ); ?>">
+				<h2 style="margin-top:0;">۴) دکمه دانلود اپلیکیشن</h2>
+				<table class="form-table"><tbody>
+					<tr><th>متن دکمه</th><td><input type="text" name="app_label" value="<?php echo esc_attr( $app_lbl ); ?>" class="regular-text"></td></tr>
+					<tr><th>آدرس دانلود</th><td><input type="url" name="app_url" value="<?php echo esc_attr( $app_url ); ?>" class="regular-text" placeholder="خالی بماند = دکمه نمایش داده نمی‌شود"></td></tr>
+				</tbody></table>
+			</div>
+
+			<!-- تماس -->
+			<div style="<?php echo esc_attr( $box ); ?>">
+				<h2 style="margin-top:0;">۵) تماس (بالای باکس آمار)</h2>
+				<table class="form-table"><tbody>
+					<tr><th>شماره تماس</th><td><input type="text" name="phone" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" placeholder="۰۲۱-۱۲۳۴۵۶۷۸"></td></tr>
+					<tr><th>ایمیل</th><td><input type="email" name="email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" placeholder="info@example.ir"></td></tr>
+				</tbody></table>
+			</div>
+
+			<?php submit_button( 'ذخیره تنظیمات فوتر' ); ?>
+		</form>
+	</div>
+
+	<script>
+	(function(){
+		var soc = document.getElementById('dSocialRows'), socI = soc.querySelectorAll('.dsoc-row').length;
+		var qk  = document.getElementById('dQuickRows'),  qkI  = qk.querySelectorAll('.dq-row').length;
+		var qkMax = document.getElementById('dQuickMax');
+
+		function noIcon(){ return '<span style="color:#a7aaad;font-size:10px;">آیکون</span>'; }
+
+		document.getElementById('dSocialAdd').addEventListener('click', function(){
+			soc.insertAdjacentHTML('beforeend',
+			 '<div class="dsoc-row" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;">'
+			+'<div style="width:74px;text-align:center;"><div class="dsoc-preview" style="width:46px;height:46px;margin:0 auto 5px;border:1px dashed #c3c4c7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;background:#f6f7f7;">'+noIcon()+'</div>'
+			+'<button type="button" class="button button-small dsoc-pick">انتخاب تصویر</button></div>'
+			+'<div style="width:150px;"><label style="display:block;font-weight:600;margin-bottom:4px;">آیکون</label>'
+			+'<input type="text" class="dsoc-icon" name="social['+socI+'][icon]" value="" style="width:100%;" placeholder="✈️ یا آدرس تصویر"></div>'
+			+'<div style="flex:1;min-width:0;"><label style="display:block;font-weight:600;margin-bottom:4px;">لینک</label>'
+			+'<input type="url" name="social['+socI+'][url]" value="" style="width:100%;" placeholder="https://t.me/example"></div>'
+			+'<button type="button" class="button dsoc-remove" style="color:#b32d2e;">✕</button></div>');
+			socI++;
+		});
+
+		soc.addEventListener('click', function(e){
+			var row = e.target.closest('.dsoc-row'); if(!row) return;
+			if (e.target.classList.contains('dsoc-remove')) {
+				if (soc.querySelectorAll('.dsoc-row').length > 1) row.remove();
+				else { row.querySelectorAll('input').forEach(function(el){el.value='';}); row.querySelector('.dsoc-preview').innerHTML = noIcon(); }
+				return;
+			}
+			if (e.target.classList.contains('dsoc-pick')) {
+				var f = wp.media({ title:'انتخاب آیکون', button:{text:'استفاده'}, multiple:false, library:{type:'image'} });
+				f.on('select', function(){
+					var a = f.state().get('selection').first().toJSON();
+					row.querySelector('.dsoc-icon').value = a.url;
+					row.querySelector('.dsoc-preview').innerHTML = '<img src="'+a.url+'" style="max-width:100%;max-height:100%;object-fit:contain;">';
+				});
+				f.open();
+			}
+		});
+
+		soc.addEventListener('input', function(e){
+			if (!e.target.classList.contains('dsoc-icon')) return;
+			var row = e.target.closest('.dsoc-row'), v = e.target.value.trim();
+			var p = row.querySelector('.dsoc-preview');
+			p.innerHTML = !v ? noIcon() : (/^https?:\/\//.test(v)
+				? '<img src="'+v+'" style="max-width:100%;max-height:100%;object-fit:contain;">'
+				: document.createTextNode(v).textContent);
+		});
+
+		function syncQuick(){
+			var n = qk.querySelectorAll('.dq-row').length;
+			qkMax.style.display = n >= 5 ? '' : 'none';
+		}
+		document.getElementById('dQuickAdd').addEventListener('click', function(){
+			if (qk.querySelectorAll('.dq-row').length >= 5) { syncQuick(); return; }
+			qk.insertAdjacentHTML('beforeend',
+			 '<div class="dq-row" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;">'
+			+'<div style="flex:1;min-width:0;"><label style="display:block;font-weight:600;margin-bottom:4px;">عنوان</label>'
+			+'<input type="text" name="quick['+qkI+'][title]" value="" style="width:100%;" placeholder="مثلا صفحه اصلی"></div>'
+			+'<div style="flex:1;min-width:0;"><label style="display:block;font-weight:600;margin-bottom:4px;">لینک</label>'
+			+'<input type="url" name="quick['+qkI+'][url]" value="" style="width:100%;"></div>'
+			+'<button type="button" class="button dq-remove" style="color:#b32d2e;">✕</button></div>');
+			qkI++; syncQuick();
+		});
+		qk.addEventListener('click', function(e){
+			if (!e.target.classList.contains('dq-remove')) return;
+			var row = e.target.closest('.dq-row');
+			if (qk.querySelectorAll('.dq-row').length > 1) row.remove();
+			else row.querySelectorAll('input').forEach(function(el){el.value='';});
+			syncQuick();
+		});
+		syncQuick();
+	})();
+	</script>
+	<?php
 }
-add_action( 'customize_register', 'dolat_footer_customize_register' );
 
-/** پنج لینک «دسترسی سریع» به‌صورت آرایه آماده — فقط لینک‌های واقعا تکمیل‌شده */
-function dolat_footer_quick_links() {
-	$out = array();
-	for ( $i = 1; $i <= 5; $i++ ) {
-		$raw = get_theme_mod( "dolat_footer_quick_{$i}", '' );
-		if ( ! $raw ) continue;
-		$parsed = dolat_parse_links( $raw );
-		if ( $parsed ) $out[] = $parsed[0];
-	}
-	return $out;
-}
+/* ═════════════════════════════════════════════════
+   توابع نمایش فوتر
+═════════════════════════════════════════════════ */
 
 /** نوشته‌های جدید یا پربازدید برای فوتر */
 function dolat_footer_posts( $mode = 'new', $count = 3 ) {
@@ -176,10 +323,10 @@ function dolat_render_footer_post( $post_id ) {
 	return ob_get_clean();
 }
 
-/* ═════════════════════════════════════════════════
-   باکس «تماس و آمار» — با پشتیبانی از افزونه WP Statistics
-   (VeronaLabs — https://wordpress.org/plugins/wp-statistics/)
-═════════════════════════════════════════════════ */
+/**
+ * باکس آمار — با پشتیبانی از افزونه WP Statistics
+ * (VeronaLabs — https://wordpress.org/plugins/wp-statistics/)
+ */
 function dolat_render_footer_stats() {
 	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 

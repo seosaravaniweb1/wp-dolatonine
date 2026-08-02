@@ -2,7 +2,8 @@
 
 $dolat_dark_default = get_theme_mod( 'dolat_default_dark_mode', false );
 $dolat_dt            = dolat_topbar_datetime();
-$dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
+// شماره تماس از «تنظیمات فوتر» خوانده می‌شود تا یک‌جا وارد شود و همه‌جا استفاده شود
+$dolat_phone         = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_phone', '' ) );
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?> dir="rtl" class="<?php echo $dolat_dark_default ? 'dark' : ''; ?>">
 <head>

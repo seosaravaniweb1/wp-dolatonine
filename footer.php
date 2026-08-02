@@ -1,63 +1,21 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit;
 
-$dolat_about_text = get_theme_mod( 'dolat_footer_about_text', get_bloginfo( 'description' ) );
-$dolat_socials     = dolat_parse_links( get_theme_mod( 'dolat_footer_socials', '' ) );
+/* همه از پیشخوان ← «تنظیمات فوتر» خوانده می‌شود */
+$dolat_about_text  = dolat_footer_opt( 'about_text', get_bloginfo( 'description' ) );
+$dolat_socials     = dolat_footer_socials();
 $dolat_quick_links = dolat_footer_quick_links();
-$dolat_app_label   = get_theme_mod( 'dolat_footer_app_label', 'دانلود اپلیکیشن ما' );
-$dolat_app_url     = get_theme_mod( 'dolat_footer_app_url', '' );
-$dolat_phone       = get_theme_mod( 'dolat_contact_phone', '' );
-$dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
+$dolat_app_label   = dolat_footer_opt( 'app_label', 'دانلود اپلیکیشن ما' );
+$dolat_app_url     = dolat_footer_opt( 'app_url' );
+$dolat_phone       = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_phone', '' ) );
+$dolat_email       = dolat_footer_opt( 'email', get_theme_mod( 'dolat_contact_email', '' ) );
 ?>
 
 <footer class="relative overflow-hidden bg-dnavy text-slate-200">
 
 	<!-- ۱) وکتور خط آسمان تهران -->
 	<div class="w-full overflow-hidden leading-[0]" aria-hidden="true">
-		<svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="h-14 w-full sm:h-20 md:h-24" fill="#eef2f6" fill-opacity="0.92">
-			<rect x="0" y="78" width="65" height="42"/>
-			<rect x="70" y="58" width="48" height="62"/>
-			<rect x="123" y="85" width="58" height="35"/>
-			<rect x="186" y="42" width="36" height="78"/>
-			<rect x="227" y="68" width="55" height="52"/>
-			<rect x="287" y="90" width="45" height="30"/>
-
-			<!-- برج میلاد -->
-			<rect x="352" y="34" width="11" height="86"/>
-			<circle cx="357.5" cy="26" r="15"/>
-			<line x1="357.5" y1="9" x2="357.5" y2="0" stroke="#eef2f6" stroke-width="3"/>
-
-			<rect x="400" y="66" width="46" height="54"/>
-			<rect x="451" y="48" width="38" height="72"/>
-			<rect x="494" y="82" width="60" height="38"/>
-			<rect x="559" y="60" width="42" height="60"/>
-
-			<!-- برج طهران (لتیس) -->
-			<rect x="628" y="46" width="7" height="74"/>
-			<rect x="619" y="26" width="25" height="20"/>
-			<line x1="631.5" y1="26" x2="631.5" y2="6" stroke="#eef2f6" stroke-width="2"/>
-
-			<rect x="670" y="72" width="50" height="48"/>
-			<rect x="725" y="50" width="40" height="70"/>
-			<rect x="770" y="84" width="55" height="36"/>
-			<rect x="830" y="60" width="44" height="60"/>
-			<rect x="879" y="40" width="34" height="80"/>
-
-			<!-- برج سفید -->
-			<rect x="928" y="44" width="9" height="76"/>
-			<circle cx="932.5" cy="36" r="10"/>
-
-			<rect x="960" y="70" width="48" height="50"/>
-			<rect x="1013" y="52" width="40" height="68"/>
-			<rect x="1058" y="86" width="58" height="34"/>
-
-			<!-- برج آزادی (طاق) -->
-			<path d="M1135 120 L1150 120 L1170 58 L1180 58 L1200 120 L1215 120 L1188 52 Q1175 32 1162 52 Z"/>
-
-			<rect x="1235" y="66" width="46" height="54"/>
-			<rect x="1286" y="48" width="38" height="72"/>
-			<rect x="1329" y="84" width="55" height="36"/>
-			<rect x="1389" y="60" width="51" height="60"/>
-		</svg>
+		<img src="<?php echo esc_url( DOLAT_THEME_URI . '/assets/img/tehran-skyline.svg' ); ?>"
+		     alt="" class="block h-16 w-full object-cover object-bottom sm:h-20 md:h-28" loading="lazy">
 	</div>
 
 	<div class="mx-auto max-w-7xl px-4 pt-6">
@@ -82,13 +40,16 @@ $dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
 				<?php if ( $dolat_socials ) : ?>
 					<div class="mt-4 flex flex-wrap gap-2">
 						<?php foreach ( $dolat_socials as $sc ) :
-							$is_img = $sc['icon'] && preg_match( '#^https?://#', $sc['icon'] );
+							$sc_icon = isset( $sc['icon'] ) ? $sc['icon'] : '';
+							$sc_url  = isset( $sc['url'] ) ? $sc['url'] : '';
+							$is_img  = $sc_icon && preg_match( '#^https?://#', $sc_icon );
+							$sc_host = $sc_url ? wp_parse_url( $sc_url, PHP_URL_HOST ) : '';
 						?>
-							<a href="<?php echo esc_url( $sc['url'] ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $sc['label'] ); ?>" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-dgold hover:text-dnavy">
+							<a href="<?php echo esc_url( $sc_url ?: '#' ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $sc_host ?: 'شبکه اجتماعی' ); ?>" class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base transition hover:bg-dgold hover:text-dnavy">
 								<?php if ( $is_img ) : ?>
-									<img src="<?php echo esc_url( $sc['icon'] ); ?>" alt="<?php echo esc_attr( $sc['label'] ); ?>" class="h-4 w-4 object-contain" loading="lazy">
+									<img src="<?php echo esc_url( $sc_icon ); ?>" alt="<?php echo esc_attr( $sc_host ); ?>" class="h-5 w-5 object-contain" loading="lazy">
 								<?php else : ?>
-									<span><?php echo esc_html( $sc['icon'] ?: '🔗' ); ?></span>
+									<span><?php echo esc_html( $sc_icon ?: '🔗' ); ?></span>
 								<?php endif; ?>
 							</a>
 						<?php endforeach; ?>
