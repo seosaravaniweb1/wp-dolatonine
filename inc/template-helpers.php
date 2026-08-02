@@ -605,6 +605,120 @@ function dolat_render_main_nav() {
 }
 
 /* ═════════════════════════════════════════════════
+   صفحه اصلی — کوئری‌های داینامیک
+═════════════════════════════════════════════════ */
+
+/** آخرین اخبار سایت: نوشته‌های زیردسته‌هایی با نقش «اخبار»، فارغ از دسته مادر */
+function dolat_get_latest_news( $count = 8 ) {
+	$all = get_terms( array( 'taxonomy' => 'category', 'hide_empty' => true ) );
+	if ( is_wp_error( $all ) || empty( $all ) ) return array();
+
+	$news_ids = array();
+	foreach ( $all as $t ) {
+		if ( $t->parent && 'news' === dolat_get_cat_role( $t ) ) $news_ids[] = $t->term_id;
+	}
+	if ( empty( $news_ids ) ) return array();
+
+	$q = new WP_Query( array(
+		'post_type'      => 'post',
+		'posts_per_page' => $count,
+		'no_found_rows'  => true,
+		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $news_ids ) ),
+	) );
+	return $q->posts;
+}
+
+/** پست‌های یک تب (news/edu/estelam) برای باکس دسته مادر در صفحه اصلی */
+function dolat_get_frontpage_tab_posts( $parent_term, $type, $total = 6 ) {
+	if ( 'estelam' === $type ) {
+		$q = new WP_Query( array(
+			'post_type'      => 'estelam',
+			'posts_per_page' => $total,
+			'no_found_rows'  => true,
+			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_term->term_id, 'include_children' => true ) ),
+		) );
+		return $q->posts;
+	}
+
+	$child = dolat_get_child_by_role( $parent_term->term_id, $type );
+	if ( ! $child ) return array();
+
+	$q = new WP_Query( array(
+		'post_type'      => 'post',
+		'posts_per_page' => $total,
+		'no_found_rows'  => true,
+		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $child->term_id, 'include_children' => true ) ),
+	) );
+	return $q->posts;
+}
+
+/** کارت بزرگ (تصویر + عنوان + خلاصه + جزئیات) برای ۲ پست اول هر تب در صفحه اصلی */
+function dolat_render_frontbox_big_item( $post, $type ) {
+	$id         = $post->ID;
+	$is_estelam = 'estelam' === $type;
+	$modal_attr = $is_estelam ? ' data-estelam-id="' . esc_attr( $id ) . '"' : '';
+	$icon       = $is_estelam ? ( get_post_meta( $id, '_dolat_icon', true ) ?: '📋' ) : ( 'edu' === $type ? '🎓' : '📰' );
+	$thumb      = has_post_thumbnail( $id ) ? get_the_post_thumbnail_url( $id, 'dolat-card' ) : '';
+	$excerpt    = wp_trim_words( get_the_excerpt( $id ), 18, '…' );
+	if ( $is_estelam && ! $excerpt ) $excerpt = get_post_meta( $id, '_dolat_short_desc', true );
+
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="group flex gap-3 rounded-xl border border-slate-100 p-2.5 transition hover:border-dgold/50 hover:shadow-md dark:border-slate-700">
+		<span class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
+			<?php if ( $thumb ) : ?>
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+			<?php else : ?>
+				<span class="flex h-full w-full items-center justify-center text-2xl"><?php echo esc_html( $icon ); ?></span>
+			<?php endif; ?>
+		</span>
+		<span class="min-w-0 flex-1">
+			<span class="line-clamp-1 block text-sm font-bold text-slate-800 group-hover:text-dnavy dark:text-slate-100 dark:group-hover:text-dgold"><?php echo esc_html( get_the_title( $id ) ); ?></span>
+			<?php if ( $excerpt ) : ?><span class="mt-1 line-clamp-2 block text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( $excerpt ); ?></span><?php endif; ?>
+			<span class="mt-2 inline-block text-xs font-semibold text-dgold">جزئیات ←</span>
+		</span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/** ردیف لیستی (عنوان + تاریخ، بدون نام نویسنده) برای ۴ پست بعدی هر تب در صفحه اصلی */
+function dolat_render_frontbox_list_item( $post, $type ) {
+	$id         = $post->ID;
+	$modal_attr = 'estelam' === $type ? ' data-estelam-id="' . esc_attr( $id ) . '"' : '';
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="flex items-center justify-between gap-2 border-b border-slate-100 py-2 text-sm last:border-0 hover:text-dgold dark:border-slate-800">
+		<span class="line-clamp-1"><?php echo esc_html( get_the_title( $id ) ); ?></span>
+		<span class="shrink-0 text-xs text-slate-400"><?php echo esc_html( get_the_date( 'j F', $id ) ); ?></span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/** کارت اسلایدی کاروسل «جدیدترین اخبار» */
+function dolat_render_news_slide( $post_id ) {
+	$thumb = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'dolat-card' ) : '';
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="group block w-56 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+		<span class="block h-32 w-full overflow-hidden bg-slate-100 dark:bg-slate-700">
+			<?php if ( $thumb ) : ?>
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
+			<?php else : ?>
+				<span class="flex h-full w-full items-center justify-center text-3xl">📰</span>
+			<?php endif; ?>
+		</span>
+		<span class="block p-3">
+			<span class="line-clamp-2 block text-sm font-bold text-slate-800 dark:text-slate-100"><?php echo esc_html( get_the_title( $post_id ) ); ?></span>
+			<span class="mt-1.5 block text-[11px] text-slate-400"><?php echo esc_html( get_the_date( 'j F Y', $post_id ) ); ?></span>
+		</span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/* ═════════════════════════════════════════════════
    مگامنوی «دسته‌بندی خدمات»
 ═════════════════════════════════════════════════ */
 

@@ -115,6 +115,44 @@
 		document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) closeMenu(); });
 	}
 
+	/* ---------- تب‌های باکس دسته مادر در صفحه اصلی ---------- */
+	function initFrontCategoryTabs() {
+		$$('.d-frontbox-tab').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var type = btn.getAttribute('data-tab-type');
+				var box = btn.closest('[data-catbox]');
+				if (!box) return;
+
+				$$('.d-frontbox-tab', box).forEach(function (b) {
+					var active = b === btn;
+					b.classList.toggle('border-dgold', active);
+					b.classList.toggle('text-dnavy', active);
+					b.classList.toggle('dark:text-dgold', active);
+					b.classList.toggle('border-transparent', !active);
+					b.classList.toggle('text-slate-400', !active);
+				});
+				$$('.d-frontbox-panel', box).forEach(function (p) {
+					p.classList.toggle('hidden', p.getAttribute('data-panel-type') !== type);
+				});
+			});
+		});
+	}
+
+	/* ---------- کاروسل جدیدترین اخبار (صفحه اصلی) ---------- */
+	function initNewsSlider() {
+		var track = $('#dNewsSlider');
+		if (!track) return;
+		$$('[data-news-dir]').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var card = track.querySelector('a');
+				var step = card ? card.offsetWidth + 16 : 240;
+				var dir = btn.getAttribute('data-news-dir') === 'next' ? 1 : -1;
+				// در چیدمان راست‌به‌چپ، جهت اسکرول معکوس است
+				track.scrollBy({ left: dir * step * -1, behavior: 'smooth' });
+			});
+		});
+	}
+
 	/* ---------- ساعت زنده نوار بالای سایت ---------- */
 	function initLiveClock() {
 		var el = $('#dLiveClock');
@@ -537,6 +575,8 @@
 		initDrawer();
 		initMegaMenu();
 		initLiveClock();
+		initFrontCategoryTabs();
+		initNewsSlider();
 		initHeaderSearch();
 		initHeroSearch();
 		initCategoryTabs();
