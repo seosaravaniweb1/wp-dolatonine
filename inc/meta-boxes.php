@@ -258,3 +258,47 @@ add_action( 'save_post_govsite', function( $post_id ) {
 	if ( isset( $_POST['dolat_site_desc'] ) )  update_post_meta( $post_id, '_dolat_site_desc', sanitize_text_field( wp_unslash( $_POST['dolat_site_desc'] ) ) );
 	if ( isset( $_POST['dolat_site_emoji'] ) ) update_post_meta( $post_id, '_dolat_site_emoji', sanitize_text_field( wp_unslash( $_POST['dolat_site_emoji'] ) ) );
 } );
+
+/* ═════════════════════════════════════════════════
+   متاباکس «استعلام مرتبط» برای نوشته‌های عادی
+   وقتی تعیین شود، دکمه کارت نوشته در صفحه دسته به‌جای
+   «ادامه مطلب» به «استعلام مرتبط» با لینک همان استعلام تغییر می‌کند.
+═════════════════════════════════════════════════ */
+add_action( 'add_meta_boxes', function() {
+	add_meta_box( 'dolat_related_estelam_box', 'استعلام مرتبط', 'dolat_render_related_estelam_metabox', 'post', 'side', 'default' );
+} );
+
+function dolat_render_related_estelam_metabox( $post ) {
+	wp_nonce_field( 'dolat_related_estelam_save', 'dolat_related_estelam_nonce' );
+	$selected = (int) get_post_meta( $post->ID, 'related_estelam', true );
+
+	$options = get_posts( array(
+		'post_type'      => 'estelam',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'no_found_rows'  => true,
+	) );
+	?>
+	<select name="dolat_related_estelam" style="width:100%;">
+		<option value="0">— بدون استعلام مرتبط —</option>
+		<?php foreach ( $options as $o ) : ?>
+			<option value="<?php echo (int) $o->ID; ?>" <?php selected( $selected, $o->ID ); ?>><?php echo esc_html( $o->post_title ); ?></option>
+		<?php endforeach; ?>
+	</select>
+	<p class="description">اگر انتخاب شود، دکمه این نوشته در صفحه دسته به‌جای «ادامه مطلب» به «استعلام مرتبط» تغییر می‌کند و مستقیم به همان استعلام لینک می‌دهد.</p>
+	<?php
+}
+
+add_action( 'save_post_post', function( $post_id ) {
+	if ( ! isset( $_POST['dolat_related_estelam_nonce'] ) || ! wp_verify_nonce( $_POST['dolat_related_estelam_nonce'], 'dolat_related_estelam_save' ) ) return;
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+	if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+	$related = isset( $_POST['dolat_related_estelam'] ) ? absint( $_POST['dolat_related_estelam'] ) : 0;
+	if ( $related ) {
+		update_post_meta( $post_id, 'related_estelam', $related );
+	} else {
+		delete_post_meta( $post_id, 'related_estelam' );
+	}
+} );

@@ -474,24 +474,6 @@ function dolat_get_popular_in_category( $term_id, $post_type = 'post', $count = 
 	return $q->posts;
 }
 
-/** آیتم فشرده برای لیست‌های پربازدید (با شماره رتبه) */
-function dolat_render_rank_item( $post_id, $rank ) {
-	$is_estelam = 'estelam' === get_post_type( $post_id );
-	$views      = (int) get_post_meta( $post_id, 'dolat_post_views', true );
-	$icon       = $is_estelam ? ( get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋' ) : '';
-	$attrs      = $is_estelam ? ' data-estelam-id="' . esc_attr( $post_id ) . '"' : '';
-
-	ob_start();
-	?>
-	<a class="d-rank-item" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"<?php echo $attrs; // phpcs:ignore ?>>
-		<span class="d-rank-num d-rank-<?php echo (int) $rank; ?>"><?php echo esc_html( number_format_i18n( $rank ) ); ?></span>
-		<span class="d-rank-title"><?php if ( $icon ) : ?><span class="d-rank-icon"><?php echo esc_html( $icon ); ?></span><?php endif; ?><?php echo esc_html( get_the_title( $post_id ) ); ?></span>
-		<?php if ( $views > 0 ) : ?><span class="d-rank-views"><?php echo esc_html( number_format_i18n( $views ) ); ?></span><?php endif; ?>
-	</a>
-	<?php
-	return ob_get_clean();
-}
-
 /** تبدیل ارقام انگلیسی به فارسی */
 function dolat_to_fa_digits( $str ) {
 	static $en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
@@ -564,46 +546,6 @@ function dolat_topbar_datetime() {
 		'time'    => dolat_to_fa_digits( date( 'H:i', $ts ) ),
 	);
 }
-
-/** مسیر راهنما بر اساس یک ترم (برای صفحات آرشیو) */
-function dolat_breadcrumb_term( $term ) {
-	if ( ! $term || is_wp_error( $term ) ) return;
-	echo '<nav class="d-breadcrumb"><a href="' . esc_url( home_url( '/' ) ) . '">خانه</a>';
-	if ( $term->parent ) {
-		$root = dolat_get_root_category( $term );
-		if ( $root ) echo '<span>›</span><a href="' . esc_url( get_term_link( $root ) ) . '">' . esc_html( $root->name ) . '</a>';
-	}
-	echo '<span>›</span><span class="d-breadcrumb-current">' . esc_html( $term->name ) . '</span></nav>';
-}
-
-/** نوار ناوبری افقی دسکتاپ (دسته‌های مادر + زیردسته‌ها) */
-function dolat_render_main_nav() {
-	$parents = dolat_get_parent_categories();
-
-	echo '<ul class="d-nav-list">';
-	echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">🏠 صفحه اصلی</a></li>';
-
-	foreach ( $parents as $cat ) {
-		$icon     = dolat_category_icon( $cat );
-		$children = get_terms( array( 'taxonomy' => 'category', 'parent' => $cat->term_id, 'hide_empty' => false ) );
-
-		echo '<li>';
-		echo '<a href="' . esc_url( get_term_link( $cat ) ) . '">' . ( $icon ? esc_html( $icon ) . ' ' : '' ) . esc_html( $cat->name ) . '</a>';
-
-		if ( $children && ! is_wp_error( $children ) ) {
-			echo '<div class="d-nav-sub">';
-			foreach ( $children as $ch ) {
-				echo '<a href="' . esc_url( get_term_link( $ch ) ) . '">' . esc_html( $ch->name ) . '</a>';
-			}
-			echo '</div>';
-		}
-		echo '</li>';
-	}
-
-	echo '<li><a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '">📋 استعلام‌ها</a></li>';
-	echo '</ul>';
-}
-
 /* ═════════════════════════════════════════════════
    صفحه اصلی — کوئری‌های داینامیک
 ═════════════════════════════════════════════════ */
@@ -1091,6 +1033,107 @@ function dolat_get_sidebar_news( $count = 4 ) {
 /** آخرین دیدگاه‌های تأییدشده — ترجیحاً روی پست‌تایپ استعلام */
 function dolat_get_live_comments( $count = 4 ) {
 	$comments = get_comments( array( 'status' => 'approve', 'number' => $count, 'post_type' => 'estelam' ) );
+	if ( ! $comments ) {
+		$comments = get_comments( array( 'status' => 'approve', 'number' => $count ) );
+	}
+	return $comments;
+}
+
+/* ═════════════════════════════════════════════════
+   صفحه دسته (category.php)
+═════════════════════════════════════════════════ */
+
+/** کارت گرید عمودی برای ردیف «پربازدید/مهم» بالای لیستینگ دسته */
+function dolat_render_post_top_card( $post_id, $rank ) {
+	$thumb = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'dolat-card' ) : '';
+	$views = (int) get_post_meta( $post_id, 'dolat_post_views', true );
+
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="group flex flex-col items-center gap-2 rounded-xl border border-slate-100 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+		<span class="relative block h-16 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+			<?php if ( $thumb ) : ?>
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+			<?php else : ?>
+				<span class="flex h-full w-full items-center justify-center text-2xl">📰</span>
+			<?php endif; ?>
+			<span class="absolute -top-1 -end-1 flex h-5 w-5 items-center justify-center rounded-full bg-dnavy text-[11px] font-bold text-white"><?php echo esc_html( number_format_i18n( $rank ) ); ?></span>
+		</span>
+		<span class="line-clamp-2 text-sm font-bold text-slate-800 group-hover:text-dnavy dark:text-slate-100"><?php echo esc_html( get_the_title( $post_id ) ); ?></span>
+		<?php if ( $views > 0 ) : ?><span class="text-[11px] text-slate-400"><?php echo esc_html( number_format_i18n( $views ) ); ?> بازدید</span><?php endif; ?>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/** ردیف کوچک شماره‌دار برای ویجت «پربازدیدترین‌ها» در سایدبار */
+function dolat_render_sidebar_rank_item( $post_id, $rank ) {
+	$views = (int) get_post_meta( $post_id, 'dolat_post_views', true );
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="flex items-center gap-2.5 border-b border-slate-100 py-2.5 last:border-0 dark:border-slate-700">
+		<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-dnavy/10 text-xs font-bold text-dnavy dark:bg-white/10 dark:text-dgold"><?php echo esc_html( number_format_i18n( $rank ) ); ?></span>
+		<span class="min-w-0 flex-1">
+			<span class="line-clamp-1 block text-[13px] font-semibold text-slate-700 dark:text-slate-200"><?php echo esc_html( get_the_title( $post_id ) ); ?></span>
+			<?php if ( $views > 0 ) : ?><span class="text-[11px] text-slate-400"><?php echo esc_html( number_format_i18n( $views ) ); ?> بازدید</span><?php endif; ?>
+		</span>
+	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * کارت افقی نوشته در لیست اصلی صفحه دسته
+ * اگر متای «related_estelam» تعیین شده باشد، دکمه به «استعلام مرتبط» تغییر می‌کند
+ */
+function dolat_render_category_post_card( $post_id ) {
+	$title   = get_the_title( $post_id );
+	$excerpt = wp_trim_words( get_the_excerpt( $post_id ), 22, '…' );
+	$date    = get_the_date( 'j F Y', $post_id );
+	$thumb   = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'dolat-card' ) : '';
+	$root    = dolat_get_post_root_category( $post_id );
+	$color   = dolat_category_color( $root );
+
+	$related     = (int) get_post_meta( $post_id, 'related_estelam', true );
+	$has_related = $related && 'estelam' === get_post_type( $related ) && 'publish' === get_post_status( $related );
+	$btn_url     = $has_related ? get_permalink( $related ) : get_permalink( $post_id );
+	$btn_label   = $has_related ? 'استعلام مرتبط' : 'ادامه مطلب';
+
+	ob_start();
+	?>
+	<article class="flex gap-4 rounded-xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-4">
+		<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700 sm:h-28 sm:w-32">
+			<?php if ( $thumb ) : ?>
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
+			<?php else : ?>
+				<span class="flex h-full w-full items-center justify-center text-3xl">📰</span>
+			<?php endif; ?>
+		</a>
+		<div class="flex min-w-0 flex-1 flex-col">
+			<?php if ( $root ) : ?><span class="mb-1 inline-block w-fit rounded px-1.5 py-0.5 text-[10px] font-bold text-white" style="background:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $root->name ); ?></span><?php endif; ?>
+			<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="line-clamp-1 text-sm font-bold text-slate-800 hover:text-dnavy dark:text-slate-100 sm:text-base"><?php echo esc_html( $title ); ?></a>
+			<?php if ( $excerpt ) : ?><p class="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( $excerpt ); ?></p><?php endif; ?>
+			<div class="mt-auto flex items-center justify-between gap-2 pt-2">
+				<span class="text-[11px] text-slate-400">📅 <?php echo esc_html( $date ); ?></span>
+				<a href="<?php echo esc_url( $btn_url ); ?>" class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition hover:brightness-105 <?php echo $has_related ? 'bg-dgold text-dnavy' : 'bg-dnavy text-white'; ?>"><?php echo esc_html( $btn_label ); ?> ←</a>
+			</div>
+		</div>
+	</article>
+	<?php
+	return ob_get_clean();
+}
+
+/** آخرین دیدگاه‌های تأییدشده روی نوشته‌های همین دسته (با fallback به کل سایت) */
+function dolat_get_category_live_comments( $term_id, $count = 4 ) {
+	$post_ids = get_posts( array(
+		'post_type'      => 'post',
+		'posts_per_page' => 100,
+		'fields'         => 'ids',
+		'no_found_rows'  => true,
+		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $term_id, 'include_children' => true ) ),
+	) );
+
+	$comments = $post_ids ? get_comments( array( 'status' => 'approve', 'number' => $count, 'post__in' => $post_ids ) ) : array();
 	if ( ! $comments ) {
 		$comments = get_comments( array( 'status' => 'approve', 'number' => $count ) );
 	}
