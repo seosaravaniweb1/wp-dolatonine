@@ -21,7 +21,6 @@ function dolat_theme_setup() {
 	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'script', 'style' ) );
 	add_theme_support( 'automatic-feed-links' );
 	add_theme_support( 'responsive-embeds' );
-	add_theme_support( 'customize-selective-refresh-widgets' );
 
 	set_post_thumbnail_size( 640, 400, true );
 	add_image_size( 'dolat-card', 200, 200, true );

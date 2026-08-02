@@ -92,7 +92,11 @@ while ( have_posts() ) : the_post();
 		endif;
 		?>
 
-		<?php if ( comments_open() || get_comments_number() ) : comments_template(); endif; ?>
+		<?php if ( comments_open() || get_comments_number() ) : ?>
+			<div class="mt-8 border-t border-slate-100 pt-6 dark:border-slate-700">
+				<?php comments_template(); ?>
+			</div>
+		<?php endif; ?>
 	</article>
 </main>
 <?php endwhile;

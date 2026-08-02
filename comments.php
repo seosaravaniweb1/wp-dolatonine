@@ -16,7 +16,7 @@ $comment_args = array(
 	),
 );
 ?>
-<div class="mt-8 border-t border-slate-100 pt-6 dark:border-slate-700">
+<div class="d-comments">
 	<?php if ( have_comments() ) : ?>
 		<h3 class="mb-4 text-base font-extrabold text-slate-800 dark:text-white"><?php comments_number( 'بدون دیدگاه', 'یک دیدگاه', '% دیدگاه' ); ?></h3>
 		<ol class="space-y-4 [&_.avatar]:h-9 [&_.avatar]:w-9 [&_.avatar]:rounded-full [&_.children]:mt-4 [&_.children]:space-y-4 [&_.children]:border-e-2 [&_.children]:border-slate-100 [&_.children]:pe-4 [&_.children]:dark:border-slate-700 [&_.comment-author]:flex [&_.comment-author]:items-center [&_.comment-author]:gap-2.5 [&_.comment-body]:rounded-xl [&_.comment-body]:border [&_.comment-body]:border-slate-100 [&_.comment-body]:bg-white [&_.comment-body]:p-4 [&_.comment-body]:dark:border-slate-700 [&_.comment-body]:dark:bg-slate-800 [&_.comment-content]:mt-2 [&_.comment-content_p]:text-sm [&_.comment-content_p]:leading-relaxed [&_.comment-content_p]:text-slate-600 [&_.comment-content_p]:dark:text-slate-300 [&_.comment-metadata]:text-[11px] [&_.comment-metadata]:text-slate-400 [&_.comment-metadata_a]:text-slate-400 [&_.fn]:text-sm [&_.fn]:font-bold [&_.fn]:text-slate-800 [&_.fn]:not-italic [&_.fn]:dark:text-slate-100 [&_.reply]:mt-2 [&_.reply_a]:text-xs [&_.reply_a]:font-bold [&_.reply_a]:text-dgold [&_.reply_a]:hover:underline">

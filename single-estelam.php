@@ -101,6 +101,12 @@ while ( have_posts() ) : the_post();
 			<div class="d-single-content rounded-2xl border border-slate-100 bg-white p-5 dark:border-slate-700 dark:bg-slate-800 sm:p-8"><?php echo dolat_inject_middle_ad( $built['content'] ); // phpcs:ignore ?></div>
 		</div>
 	<?php endif; ?>
+
+	<?php if ( comments_open() || get_comments_number() ) : ?>
+		<div class="mt-6 rounded-2xl border border-slate-100 bg-white p-5 dark:border-slate-700 dark:bg-slate-800 sm:p-8">
+			<?php comments_template(); ?>
+		</div>
+	<?php endif; ?>
 </main>
 <?php endwhile;
 get_footer();
