@@ -1,14 +1,10 @@
 <?php
 /**
- * تنظیمات فوتر: درباره ما، شبکه‌های اجتماعی، لینک‌های مهم، اپلیکیشن، تماس
+ * تنظیمات فوتر — از طریق سفارشی‌سازی وردپرس (Theme Customizer)
+ * درباره ما، شبکه‌های اجتماعی، دسترسی سریع، اپلیکیشن، تماس
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-function dolat_footer_opt( $key, $default = '' ) {
-	$opts = get_option( 'dolat_footer', array() );
-	return isset( $opts[ $key ] ) && '' !== $opts[ $key ] ? $opts[ $key ] : $default;
-}
 
 /**
  * تبدیل متن چندخطی به آرایه لینک
@@ -29,76 +25,114 @@ function dolat_parse_links( $raw ) {
 	return $out;
 }
 
-/* ── صفحه تنظیمات ── */
-add_action( 'admin_menu', function() {
-	add_theme_page( 'تنظیمات فوتر', '🦶 تنظیمات فوتر', 'manage_options', 'dolat-footer', 'dolat_render_footer_page' );
-} );
+/* ═════════════════════════════════════════════════
+   پنل «فوتر» در سفارشی‌سازی وردپرس
+═════════════════════════════════════════════════ */
+function dolat_footer_customize_register( $wp_customize ) {
+	$wp_customize->add_panel( 'dolat_footer_panel', array(
+		'title'    => 'فوتر سایت',
+		'priority' => 160,
+	) );
 
-function dolat_footer_fields() {
-	return array(
-		'about_title'  => array( 'label' => 'عنوان بخش درباره ما', 'type' => 'text' ),
-		'about_text'   => array( 'label' => 'متن کوتاه درباره ما', 'type' => 'textarea' ),
-		'socials'      => array( 'label' => 'شبکه‌های اجتماعی', 'type' => 'links', 'hint' => 'هر خط: <code>نام | آدرس | آیکون</code><br>آیکون می‌تواند اموجی باشد یا آدرس تصویر لوگو.<br>مثال: <code>تلگرام | https://t.me/xxx | ✈️</code><br>مثال با لوگو: <code>ایتا | https://eitaa.com/xxx | https://site.ir/wp-content/uploads/eitaa.png</code>' ),
-		'links_title'  => array( 'label' => 'عنوان بخش لینک‌های مهم', 'type' => 'text' ),
-		'links'        => array( 'label' => 'لینک‌های مهم', 'type' => 'links', 'hint' => 'هر خط: <code>عنوان | آدرس</code>' ),
-		'app_title'    => array( 'label' => 'عنوان بخش اپلیکیشن', 'type' => 'text' ),
-		'app_text'     => array( 'label' => 'توضیح کوتاه اپلیکیشن', 'type' => 'text' ),
-		'app_links'    => array( 'label' => 'لینک‌های دانلود اپلیکیشن', 'type' => 'links', 'hint' => 'هر خط: <code>عنوان | آدرس | آیکون</code><br>مثال: <code>کافه بازار | https://cafebazaar.ir/app/... | 🛒</code>' ),
-		'contact_text' => array( 'label' => 'متن تماس با ما (گوشه فوتر)', 'type' => 'text', 'hint' => 'مثال: تماس با ما: ۰۲۱-۱۲۳۴۵۶۷۸' ),
-		'contact_url'  => array( 'label' => 'لینک صفحه تماس با ما', 'type' => 'text' ),
-	);
-}
+	/* ── درباره ما ── */
+	$wp_customize->add_section( 'dolat_footer_about', array(
+		'title' => 'فوتر — درباره ما',
+		'panel' => 'dolat_footer_panel',
+	) );
 
-function dolat_render_footer_page() {
-	if ( ! current_user_can( 'manage_options' ) ) return;
+	$wp_customize->add_setting( 'dolat_footer_about_text', array(
+		'default'           => get_bloginfo( 'description' ),
+		'sanitize_callback' => 'sanitize_textarea_field',
+	) );
+	$wp_customize->add_control( 'dolat_footer_about_text', array(
+		'label'   => 'متن کوتاه درباره ما',
+		'section' => 'dolat_footer_about',
+		'type'    => 'textarea',
+	) );
 
-	if ( isset( $_POST['dolat_footer_nonce'] ) && wp_verify_nonce( $_POST['dolat_footer_nonce'], 'dolat_footer_save' ) ) {
-		$new = array();
-		foreach ( dolat_footer_fields() as $key => $f ) {
-			$val = isset( $_POST['f'][ $key ] ) ? wp_unslash( $_POST['f'][ $key ] ) : '';
-			$new[ $key ] = 'text' === $f['type'] ? sanitize_text_field( $val ) : sanitize_textarea_field( $val );
-		}
-		update_option( 'dolat_footer', $new );
-		echo '<div class="notice notice-success is-dismissible"><p>تنظیمات فوتر ذخیره شد.</p></div>';
+	$wp_customize->add_setting( 'dolat_footer_socials', array(
+		'default'           => '',
+		'sanitize_callback' => 'sanitize_textarea_field',
+	) );
+	$wp_customize->add_control( 'dolat_footer_socials', array(
+		'label'       => 'شبکه‌های اجتماعی',
+		'description' => 'هر خط یک شبکه: نام | آدرس | آیکون (اموجی یا آدرس تصویر لوگو). مثال: تلگرام | https://t.me/xxx | ✈️ — هر تعداد خط که بخواهید اضافه کنید.',
+		'section'     => 'dolat_footer_about',
+		'type'        => 'textarea',
+	) );
+
+	/* ── دسترسی سریع ── */
+	$wp_customize->add_section( 'dolat_footer_quick', array(
+		'title' => 'فوتر — دسترسی سریع',
+		'panel' => 'dolat_footer_panel',
+	) );
+
+	for ( $i = 1; $i <= 5; $i++ ) {
+		$wp_customize->add_setting( "dolat_footer_quick_{$i}", array(
+			'default'           => '',
+			'sanitize_callback' => 'sanitize_text_field',
+		) );
+		$wp_customize->add_control( "dolat_footer_quick_{$i}", array(
+			'label'       => "لینک دسترسی سریع #{$i}",
+			'description' => 'قالب: عنوان | آدرس — مثال: صفحه اصلی | ' . home_url( '/' ),
+			'section'     => 'dolat_footer_quick',
+			'type'        => 'text',
+		) );
 	}
-	?>
-	<div class="wrap">
-		<h1>🦶 تنظیمات فوتر</h1>
-		<p style="max-width:760px;line-height:2;">
-			بخش‌های فوتر از اینجا مدیریت می‌شوند. لوگوی فوتر همان «آرم سایت» در
-			<a href="<?php echo esc_url( admin_url( 'customize.php' ) ); ?>">سفارشی‌سازی</a> است.
-			نوشته‌های جدید و پربازدید خودکار نمایش داده می‌شوند.
-		</p>
 
-		<form method="post">
-			<?php wp_nonce_field( 'dolat_footer_save', 'dolat_footer_nonce' ); ?>
-			<table class="form-table">
-				<?php foreach ( dolat_footer_fields() as $key => $f ) :
-					$val = dolat_footer_opt( $key );
-				?>
-				<tr>
-					<th><label for="f_<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $f['label'] ); ?></label></th>
-					<td>
-						<?php if ( 'text' === $f['type'] ) : ?>
-							<input type="text" id="f_<?php echo esc_attr( $key ); ?>" name="f[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $val ); ?>" class="regular-text" style="width:100%;max-width:560px;">
-						<?php else : ?>
-							<textarea id="f_<?php echo esc_attr( $key ); ?>" name="f[<?php echo esc_attr( $key ); ?>]" rows="5" style="width:100%;max-width:560px;direction:rtl;"><?php echo esc_textarea( $val ); ?></textarea>
-						<?php endif; ?>
-						<?php if ( ! empty( $f['hint'] ) ) : ?>
-							<p class="description"><?php echo wp_kses_post( $f['hint'] ); ?></p>
-						<?php endif; ?>
-					</td>
-				</tr>
-				<?php endforeach; ?>
-			</table>
-			<?php submit_button( 'ذخیره تنظیمات فوتر' ); ?>
-		</form>
-	</div>
-	<?php
+	$wp_customize->add_setting( 'dolat_footer_app_label', array(
+		'default'           => 'دانلود اپلیکیشن ما',
+		'sanitize_callback' => 'sanitize_text_field',
+	) );
+	$wp_customize->add_control( 'dolat_footer_app_label', array(
+		'label'   => 'متن دکمه دانلود اپلیکیشن',
+		'section' => 'dolat_footer_quick',
+		'type'    => 'text',
+	) );
+
+	$wp_customize->add_setting( 'dolat_footer_app_url', array(
+		'default'           => '',
+		'sanitize_callback' => 'esc_url_raw',
+	) );
+	$wp_customize->add_control( 'dolat_footer_app_url', array(
+		'label'   => 'آدرس دانلود اپلیکیشن',
+		'section' => 'dolat_footer_quick',
+		'type'    => 'url',
+	) );
+
+	/* ── تماس ── */
+	$wp_customize->add_section( 'dolat_footer_contact', array(
+		'title' => 'فوتر — تماس',
+		'panel' => 'dolat_footer_panel',
+	) );
+
+	$wp_customize->add_setting( 'dolat_contact_email', array(
+		'default'           => '',
+		'sanitize_callback' => 'sanitize_email',
+	) );
+	$wp_customize->add_control( 'dolat_contact_email', array(
+		'label'       => 'ایمیل تماس',
+		'description' => 'شماره تماس از «سفارشی‌سازی ← بخش هدر / صفحه اصلی» خوانده می‌شود (همان شماره‌ای که در نوار بالای سایت استفاده می‌شود).',
+		'section'     => 'dolat_footer_contact',
+		'type'        => 'email',
+	) );
+}
+add_action( 'customize_register', 'dolat_footer_customize_register' );
+
+/** پنج لینک «دسترسی سریع» به‌صورت آرایه آماده — فقط لینک‌های واقعا تکمیل‌شده */
+function dolat_footer_quick_links() {
+	$out = array();
+	for ( $i = 1; $i <= 5; $i++ ) {
+		$raw = get_theme_mod( "dolat_footer_quick_{$i}", '' );
+		if ( ! $raw ) continue;
+		$parsed = dolat_parse_links( $raw );
+		if ( $parsed ) $out[] = $parsed[0];
+	}
+	return $out;
 }
 
 /** نوشته‌های جدید یا پربازدید برای فوتر */
-function dolat_footer_posts( $mode = 'new', $count = 4 ) {
+function dolat_footer_posts( $mode = 'new', $count = 3 ) {
 	$args = array(
 		'post_type'      => array( 'post', 'estelam' ),
 		'posts_per_page' => $count,
@@ -125,19 +159,60 @@ function dolat_render_footer_post( $post_id ) {
 	$icon       = $is_estelam ? ( get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋' ) : '📰';
 	ob_start();
 	?>
-	<a class="d-fpost" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>">
-		<span class="d-fpost-thumb">
+	<a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="flex items-center gap-2.5 border-b border-white/10 py-2.5 last:border-0">
+		<span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
 			<?php if ( $thumb ) : ?>
-				<img src="<?php echo esc_url( $thumb ); ?>" alt="" loading="lazy">
+				<img src="<?php echo esc_url( $thumb ); ?>" alt="" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
-				<span class="d-fpost-emoji"><?php echo esc_html( $icon ); ?></span>
+				<span class="text-lg"><?php echo esc_html( $icon ); ?></span>
 			<?php endif; ?>
 		</span>
-		<span class="d-fpost-body">
-			<span class="d-fpost-title"><?php echo esc_html( wp_trim_words( get_the_title( $post_id ), 8, '…' ) ); ?></span>
-			<span class="d-fpost-date"><?php echo esc_html( get_the_date( 'j F Y', $post_id ) ); ?></span>
+		<span class="min-w-0 flex-1">
+			<span class="line-clamp-1 block text-[13px] font-medium text-slate-100"><?php echo esc_html( wp_trim_words( get_the_title( $post_id ), 8, '…' ) ); ?></span>
+			<span class="mt-0.5 block text-[11px] text-slate-400"><?php echo esc_html( get_the_date( 'j F Y', $post_id ) ); ?></span>
 		</span>
 	</a>
+	<?php
+	return ob_get_clean();
+}
+
+/* ═════════════════════════════════════════════════
+   باکس «تماس و آمار» — با پشتیبانی از افزونه WP Statistics
+   (VeronaLabs — https://wordpress.org/plugins/wp-statistics/)
+═════════════════════════════════════════════════ */
+function dolat_render_footer_stats() {
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
+	$rows   = array();
+	$rows[] = array( 'label' => 'آی‌پی شما', 'value' => $ip ?: '—' );
+
+	$has_stats = false;
+	if ( function_exists( 'wp_statistics_today' ) ) {
+		$rows[]    = array( 'label' => 'بازدید امروز', 'value' => number_format_i18n( (int) wp_statistics_today( 'visit' ) ) );
+		$has_stats = true;
+	}
+	if ( function_exists( 'wp_statistics_total' ) ) {
+		$rows[]    = array( 'label' => 'بازدید کل', 'value' => number_format_i18n( (int) wp_statistics_total( 'visit' ) ) );
+		$has_stats = true;
+	}
+	if ( function_exists( 'wp_statistics_useronline' ) ) {
+		$rows[]    = array( 'label' => 'کاربران آنلاین', 'value' => number_format_i18n( (int) wp_statistics_useronline() ) );
+		$has_stats = true;
+	}
+
+	ob_start();
+	?>
+	<div class="rounded-xl bg-white/5 p-3">
+		<?php foreach ( $rows as $r ) : ?>
+			<div class="flex items-center justify-between border-b border-white/10 py-1.5 text-[13px] last:border-0">
+				<span class="text-slate-400"><?php echo esc_html( $r['label'] ); ?></span>
+				<span class="font-bold text-slate-100" dir="ltr"><?php echo esc_html( $r['value'] ); ?></span>
+			</div>
+		<?php endforeach; ?>
+		<?php if ( ! $has_stats ) : ?>
+			<p class="mt-2 text-[11px] leading-relaxed text-slate-500">برای نمایش آمار بازدید، افزونه WP Statistics را نصب و فعال کنید.</p>
+		<?php endif; ?>
+	</div>
 	<?php
 	return ob_get_clean();
 }

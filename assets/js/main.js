@@ -153,6 +153,29 @@
 		});
 	}
 
+	/* ---------- تب‌های ستون نوشته‌ها در فوتر ---------- */
+	function initFooterDynTabs() {
+		var tabs = $$('.d-footer-tab');
+		if (!tabs.length) return;
+		tabs.forEach(function (tab) {
+			tab.addEventListener('click', function () {
+				var key = tab.getAttribute('data-fpane');
+				var wrap = tab.closest('footer') || document;
+
+				$$('.d-footer-tab', wrap).forEach(function (t) {
+					var active = t === tab;
+					t.classList.toggle('border-dgold', active);
+					t.classList.toggle('text-white', active);
+					t.classList.toggle('border-transparent', !active);
+					t.classList.toggle('text-slate-400', !active);
+				});
+				$$('.d-footer-pane', wrap).forEach(function (p) {
+					p.classList.toggle('hidden', p.getAttribute('data-pane') !== key);
+				});
+			});
+		});
+	}
+
 	/* ---------- ساعت زنده نوار بالای سایت ---------- */
 	function initLiveClock() {
 		var el = $('#dLiveClock');
@@ -545,22 +568,6 @@
 		});
 	}
 
-	/* ---------- تب‌های فوتر ---------- */
-	function initFooterTabs() {
-		var tabs = $$('.d-ftab');
-		if (!tabs.length) return;
-		tabs.forEach(function (tab) {
-			tab.addEventListener('click', function () {
-				var key = tab.getAttribute('data-ftab');
-				tabs.forEach(function (t) { t.classList.remove('active'); });
-				tab.classList.add('active');
-				$$('.d-ftab-pane').forEach(function (p) {
-					p.classList.toggle('active', p.getAttribute('data-pane') === key);
-				});
-			});
-		});
-	}
-
 	/* ---------- تابلوی سایت‌های دولتی: توقف با نگه‌داشتن موس ---------- */
 	function initGovBoard() {
 		var board = $('#dGovBoard');
@@ -577,6 +584,7 @@
 		initLiveClock();
 		initFrontCategoryTabs();
 		initNewsSlider();
+		initFooterDynTabs();
 		initHeaderSearch();
 		initHeroSearch();
 		initCategoryTabs();
@@ -587,7 +595,6 @@
 		initHeadingAnchors();
 		initCardKeyboard();
 		initSliders();
-		initFooterTabs();
 		initGovBoard();
 		$$('.d-single-estelam .d-modal-static').forEach(bindStepTabs);
 	});

@@ -1,100 +1,162 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) exit;
 
-<footer class="d-footer">
-	<div class="d-footer-inner">
+$dolat_about_text = get_theme_mod( 'dolat_footer_about_text', get_bloginfo( 'description' ) );
+$dolat_socials     = dolat_parse_links( get_theme_mod( 'dolat_footer_socials', '' ) );
+$dolat_quick_links = dolat_footer_quick_links();
+$dolat_app_label   = get_theme_mod( 'dolat_footer_app_label', 'دانلود اپلیکیشن ما' );
+$dolat_app_url     = get_theme_mod( 'dolat_footer_app_url', '' );
+$dolat_phone       = get_theme_mod( 'dolat_contact_phone', '' );
+$dolat_email       = get_theme_mod( 'dolat_contact_email', '' );
+?>
 
-		<div class="d-footer-grid">
+<footer class="relative overflow-hidden bg-dnavy text-slate-200">
 
-			<!-- درباره ما -->
-			<div class="d-footer-col d-footer-about">
-				<?php if ( has_custom_logo() ) : ?>
-					<div class="d-footer-logo"><?php the_custom_logo(); ?></div>
-				<?php else : ?>
-					<div class="d-footer-logo-text">🏛 <?php bloginfo( 'name' ); ?></div>
+	<!-- ۱) وکتور خط آسمان تهران -->
+	<div class="w-full overflow-hidden leading-[0]" aria-hidden="true">
+		<svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="h-14 w-full sm:h-20 md:h-24" fill="#eef2f6" fill-opacity="0.92">
+			<rect x="0" y="78" width="65" height="42"/>
+			<rect x="70" y="58" width="48" height="62"/>
+			<rect x="123" y="85" width="58" height="35"/>
+			<rect x="186" y="42" width="36" height="78"/>
+			<rect x="227" y="68" width="55" height="52"/>
+			<rect x="287" y="90" width="45" height="30"/>
+
+			<!-- برج میلاد -->
+			<rect x="352" y="34" width="11" height="86"/>
+			<circle cx="357.5" cy="26" r="15"/>
+			<line x1="357.5" y1="9" x2="357.5" y2="0" stroke="#eef2f6" stroke-width="3"/>
+
+			<rect x="400" y="66" width="46" height="54"/>
+			<rect x="451" y="48" width="38" height="72"/>
+			<rect x="494" y="82" width="60" height="38"/>
+			<rect x="559" y="60" width="42" height="60"/>
+
+			<!-- برج طهران (لتیس) -->
+			<rect x="628" y="46" width="7" height="74"/>
+			<rect x="619" y="26" width="25" height="20"/>
+			<line x1="631.5" y1="26" x2="631.5" y2="6" stroke="#eef2f6" stroke-width="2"/>
+
+			<rect x="670" y="72" width="50" height="48"/>
+			<rect x="725" y="50" width="40" height="70"/>
+			<rect x="770" y="84" width="55" height="36"/>
+			<rect x="830" y="60" width="44" height="60"/>
+			<rect x="879" y="40" width="34" height="80"/>
+
+			<!-- برج سفید -->
+			<rect x="928" y="44" width="9" height="76"/>
+			<circle cx="932.5" cy="36" r="10"/>
+
+			<rect x="960" y="70" width="48" height="50"/>
+			<rect x="1013" y="52" width="40" height="68"/>
+			<rect x="1058" y="86" width="58" height="34"/>
+
+			<!-- برج آزادی (طاق) -->
+			<path d="M1135 120 L1150 120 L1170 58 L1180 58 L1200 120 L1215 120 L1188 52 Q1175 32 1162 52 Z"/>
+
+			<rect x="1235" y="66" width="46" height="54"/>
+			<rect x="1286" y="48" width="38" height="72"/>
+			<rect x="1329" y="84" width="55" height="36"/>
+			<rect x="1389" y="60" width="51" height="60"/>
+		</svg>
+	</div>
+
+	<div class="mx-auto max-w-7xl px-4 pt-6">
+		<div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+
+			<!-- ۳) ستون اول: درباره ما -->
+			<div>
+				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="mb-3 flex items-center gap-2">
+					<?php if ( has_custom_logo() ) : ?>
+						<span class="block h-9 w-9 overflow-hidden rounded-lg [&_img]:h-full [&_img]:w-full [&_img]:object-contain"><?php the_custom_logo(); ?></span>
+					<?php else : ?>
+						<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-lg text-dgold">🏛</span>
+					<?php endif; ?>
+					<span class="font-extrabold text-white"><?php bloginfo( 'name' ); ?></span>
+				</a>
+
+				<?php if ( $dolat_about_text ) : ?>
+					<p class="text-[13px] leading-relaxed text-slate-400"><?php echo esc_html( $dolat_about_text ); ?></p>
 				<?php endif; ?>
 
-				<h4 class="d-footer-widget-title"><?php echo esc_html( dolat_footer_opt( 'about_title', 'درباره ما' ) ); ?></h4>
-				<p class="d-footer-about-text"><?php echo esc_html( dolat_footer_opt( 'about_text', get_bloginfo( 'description' ) ) ); ?></p>
-
-				<?php $socials = dolat_parse_links( dolat_footer_opt( 'socials' ) ); ?>
-				<?php if ( $socials ) : ?>
-				<div class="d-socials">
-					<?php foreach ( $socials as $sc ) :
-						$is_img = $sc['icon'] && preg_match( '#^https?://#', $sc['icon'] );
-					?>
-						<a href="<?php echo esc_url( $sc['url'] ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $sc['label'] ); ?>" class="d-social">
-							<?php if ( $is_img ) : ?>
-								<img src="<?php echo esc_url( $sc['icon'] ); ?>" alt="<?php echo esc_attr( $sc['label'] ); ?>" loading="lazy">
-							<?php else : ?>
-								<span><?php echo esc_html( $sc['icon'] ?: '🔗' ); ?></span>
-							<?php endif; ?>
-						</a>
-					<?php endforeach; ?>
-				</div>
+				<?php if ( $dolat_socials ) : ?>
+					<div class="mt-4 flex flex-wrap gap-2">
+						<?php foreach ( $dolat_socials as $sc ) :
+							$is_img = $sc['icon'] && preg_match( '#^https?://#', $sc['icon'] );
+						?>
+							<a href="<?php echo esc_url( $sc['url'] ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $sc['label'] ); ?>" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-dgold hover:text-dnavy">
+								<?php if ( $is_img ) : ?>
+									<img src="<?php echo esc_url( $sc['icon'] ); ?>" alt="<?php echo esc_attr( $sc['label'] ); ?>" class="h-4 w-4 object-contain" loading="lazy">
+								<?php else : ?>
+									<span><?php echo esc_html( $sc['icon'] ?: '🔗' ); ?></span>
+								<?php endif; ?>
+							</a>
+						<?php endforeach; ?>
+					</div>
 				<?php endif; ?>
 			</div>
 
-			<!-- نوشته‌ها با تب -->
-			<div class="d-footer-col d-footer-posts">
-				<div class="d-ftabs">
-					<button class="d-ftab active" data-ftab="new">جدیدترین‌ها</button>
-					<button class="d-ftab" data-ftab="popular">پربازدیدترین‌ها</button>
-				</div>
-				<div class="d-ftab-pane active" data-pane="new">
-					<?php foreach ( dolat_footer_posts( 'new', 4 ) as $p ) echo dolat_render_footer_post( $p->ID ); ?>
-				</div>
-				<div class="d-ftab-pane" data-pane="popular">
-					<?php foreach ( dolat_footer_posts( 'popular', 4 ) as $p ) echo dolat_render_footer_post( $p->ID ); ?>
-				</div>
-			</div>
-
-			<!-- لینک‌های مهم -->
-			<div class="d-footer-col">
-				<h4 class="d-footer-widget-title"><?php echo esc_html( dolat_footer_opt( 'links_title', 'لینک‌های مهم' ) ); ?></h4>
-				<?php $links = dolat_parse_links( dolat_footer_opt( 'links' ) ); ?>
-				<?php if ( $links ) : ?>
-					<ul class="d-footer-links">
-						<?php foreach ( $links as $l ) : ?>
-							<li><a href="<?php echo esc_url( $l['url'] ); ?>"><?php echo esc_html( $l['label'] ); ?></a></li>
+			<!-- ۴) ستون دوم: دسترسی سریع -->
+			<div>
+				<h4 class="mb-3 text-sm font-extrabold text-white">دسترسی سریع</h4>
+				<?php if ( $dolat_quick_links ) : ?>
+					<ul class="space-y-2">
+						<?php foreach ( $dolat_quick_links as $l ) : ?>
+							<li><a href="<?php echo esc_url( $l['url'] ); ?>" class="text-[13px] text-slate-400 transition hover:text-dgold"><?php echo esc_html( $l['label'] ); ?></a></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php else : ?>
-					<ul class="d-footer-links">
-						<?php foreach ( dolat_get_parent_categories() as $c ) : ?>
-							<li><a href="<?php echo esc_url( get_term_link( $c ) ); ?>"><?php echo esc_html( $c->name ); ?></a></li>
-						<?php endforeach; ?>
-					</ul>
+					<p class="text-[13px] text-slate-500">لینک‌های دسترسی سریع از سفارشی‌سازی ← فوتر ← دسترسی سریع قابل تنظیم است.</p>
+				<?php endif; ?>
+
+				<?php if ( $dolat_app_url ) : ?>
+					<a href="<?php echo esc_url( $dolat_app_url ); ?>" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 rounded-lg bg-dgold px-4 py-2.5 text-sm font-bold text-dnavy shadow transition hover:brightness-105">
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+						<?php echo esc_html( $dolat_app_label ); ?>
+					</a>
 				<?php endif; ?>
 			</div>
 
-			<!-- اپلیکیشن -->
-			<div class="d-footer-col">
-				<h4 class="d-footer-widget-title"><?php echo esc_html( dolat_footer_opt( 'app_title', 'اپلیکیشن ما' ) ); ?></h4>
-				<p class="d-footer-app-text"><?php echo esc_html( dolat_footer_opt( 'app_text', 'همه استعلام‌ها و آموزش‌ها در جیب شما.' ) ); ?></p>
-				<?php $apps = dolat_parse_links( dolat_footer_opt( 'app_links' ) ); ?>
-				<?php if ( $apps ) : ?>
-				<div class="d-app-links">
-					<?php foreach ( $apps as $a ) :
-						$is_img = $a['icon'] && preg_match( '#^https?://#', $a['icon'] );
-					?>
-						<a href="<?php echo esc_url( $a['url'] ); ?>" target="_blank" rel="noopener" class="d-app-link">
-							<?php if ( $is_img ) : ?><img src="<?php echo esc_url( $a['icon'] ); ?>" alt="" loading="lazy">
-							<?php else : ?><span class="d-app-icon"><?php echo esc_html( $a['icon'] ?: '📱' ); ?></span><?php endif; ?>
-							<span><?php echo esc_html( $a['label'] ); ?></span>
-						</a>
-					<?php endforeach; ?>
+			<!-- ۵) ستون سوم: تب‌های داینامیک -->
+			<div>
+				<div class="mb-3 flex gap-1 border-b border-white/10 text-sm font-bold">
+					<button type="button" class="d-footer-tab border-b-2 border-dgold px-1 pb-2 text-white" data-fpane="new">جدیدترین‌ها</button>
+					<button type="button" class="d-footer-tab border-b-2 border-transparent px-1 pb-2 text-slate-400 hover:text-slate-200" data-fpane="popular">پربازدیدترین‌ها</button>
 				</div>
-				<?php endif; ?>
+				<div class="d-footer-pane" data-pane="new">
+					<?php foreach ( dolat_footer_posts( 'new', 3 ) as $p ) echo dolat_render_footer_post( $p->ID ); ?>
+				</div>
+				<div class="d-footer-pane hidden" data-pane="popular">
+					<?php foreach ( dolat_footer_posts( 'popular', 3 ) as $p ) echo dolat_render_footer_post( $p->ID ); ?>
+				</div>
+			</div>
+
+			<!-- ۶) ستون چهارم: تماس و آمار -->
+			<div>
+				<h4 class="mb-3 text-sm font-extrabold text-white">تماس و آمار</h4>
+				<div class="space-y-2 text-[13px]">
+					<?php if ( $dolat_phone ) : ?>
+						<a href="tel:<?php echo esc_attr( preg_replace( '/\s+/', '', $dolat_phone ) ); ?>" class="flex items-center gap-2 text-slate-300 hover:text-dgold" dir="ltr">
+							<span aria-hidden="true">📞</span><?php echo esc_html( $dolat_phone ); ?>
+						</a>
+					<?php endif; ?>
+					<?php if ( $dolat_email ) : ?>
+						<a href="mailto:<?php echo esc_attr( $dolat_email ); ?>" class="flex items-center gap-2 text-slate-300 hover:text-dgold" dir="ltr">
+							<span aria-hidden="true">✉️</span><?php echo esc_html( $dolat_email ); ?>
+						</a>
+					<?php endif; ?>
+				</div>
+
+				<div class="mt-4">
+					<?php echo dolat_render_footer_stats(); ?>
+				</div>
 			</div>
 
 		</div>
 
-		<div class="d-footer-bottom">
-			<p class="d-footer-copy">© <?php echo esc_html( date_i18n( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?> — تمامی حقوق محفوظ است.</p>
-			<?php $contact = dolat_footer_opt( 'contact_text' ); ?>
-			<?php if ( $contact ) : ?>
-				<a class="d-footer-contact" href="<?php echo esc_url( dolat_footer_opt( 'contact_url', '#' ) ); ?>">✉ <?php echo esc_html( $contact ); ?></a>
-			<?php endif; ?>
+		<!-- ۷) نوار کپی‌رایت -->
+		<div class="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/10 py-4 text-[12px] text-slate-500 sm:flex-row">
+			<span>© <?php echo esc_html( date_i18n( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?> — تمامی حقوق محفوظ است.</span>
+			<span>طراحی و پیاده‌سازی — <?php bloginfo( 'name' ); ?></span>
 		</div>
 	</div>
 </footer>
