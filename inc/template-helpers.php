@@ -565,45 +565,29 @@ function dolat_get_frontpage_tab_posts( $parent_term, $type, $total = 6 ) {
 	return $q->posts;
 }
 
-/** کارت بزرگ (تصویر + عنوان + خلاصه + جزئیات) برای ۲ پست اول هر تب در صفحه اصلی */
-function dolat_render_frontbox_big_item( $post, $type ) {
+/**
+ * ردیف یکدست و فشرده برای همه تب‌های باکس دسته در صفحه اصلی
+ * همه آیتم‌ها (اخبار/آموزش/استعلام) دقیقا یک شکل دارند: تصویر کوچک + عنوان + تاریخ
+ */
+function dolat_render_frontbox_item( $post, $type ) {
 	$id         = $post->ID;
 	$is_estelam = 'estelam' === $type;
 	$modal_attr = $is_estelam ? ' data-estelam-id="' . esc_attr( $id ) . '"' : '';
 	$icon       = $is_estelam ? ( get_post_meta( $id, '_dolat_icon', true ) ?: '📋' ) : ( 'edu' === $type ? '🎓' : '📰' );
 	$thumb      = has_post_thumbnail( $id ) ? get_the_post_thumbnail_url( $id, 'dolat-card' ) : '';
-	$excerpt    = wp_trim_words( get_the_excerpt( $id ), 18, '…' );
-	if ( $is_estelam && ! $excerpt ) $excerpt = get_post_meta( $id, '_dolat_short_desc', true );
 
 	ob_start();
 	?>
-	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="group flex gap-3 rounded-xl border border-slate-100 p-2.5 transition hover:border-dgold/50 hover:shadow-md dark:border-slate-700">
-		<span class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
+	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="group flex items-center gap-2.5 rounded-lg border border-slate-100 p-2 transition hover:border-dgold/50 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700/40">
+		<span class="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-700">
 			<?php if ( $thumb ) : ?>
 				<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( get_the_title( $id ) ); ?>" class="h-full w-full object-cover" loading="lazy">
 			<?php else : ?>
-				<span class="flex h-full w-full items-center justify-center text-2xl"><?php echo esc_html( $icon ); ?></span>
+				<span class="flex h-full w-full items-center justify-center text-base"><?php echo esc_html( $icon ); ?></span>
 			<?php endif; ?>
 		</span>
-		<span class="min-w-0 flex-1">
-			<span class="line-clamp-1 block text-sm font-bold text-slate-800 group-hover:text-dnavy dark:text-slate-100 dark:group-hover:text-dgold"><?php echo esc_html( get_the_title( $id ) ); ?></span>
-			<?php if ( $excerpt ) : ?><span class="mt-1 line-clamp-2 block text-xs text-slate-500 dark:text-slate-400"><?php echo esc_html( $excerpt ); ?></span><?php endif; ?>
-			<span class="mt-2 inline-block text-xs font-semibold text-dgold">جزئیات ←</span>
-		</span>
-	</a>
-	<?php
-	return ob_get_clean();
-}
-
-/** ردیف لیستی (عنوان + تاریخ، بدون نام نویسنده) برای ۴ پست بعدی هر تب در صفحه اصلی */
-function dolat_render_frontbox_list_item( $post, $type ) {
-	$id         = $post->ID;
-	$modal_attr = 'estelam' === $type ? ' data-estelam-id="' . esc_attr( $id ) . '"' : '';
-	ob_start();
-	?>
-	<a href="<?php echo esc_url( get_permalink( $id ) ); ?>"<?php echo $modal_attr; // phpcs:ignore ?> class="flex items-center justify-between gap-2 border-b border-slate-100 py-2 text-sm last:border-0 hover:text-dgold dark:border-slate-800">
-		<span class="line-clamp-1"><?php echo esc_html( get_the_title( $id ) ); ?></span>
-		<span class="shrink-0 text-xs text-slate-400"><?php echo esc_html( get_the_date( 'j F', $id ) ); ?></span>
+		<span class="line-clamp-1 min-w-0 flex-1 text-[13px] font-semibold text-slate-700 group-hover:text-dnavy dark:text-slate-200 dark:group-hover:text-dgold"><?php echo esc_html( get_the_title( $id ) ); ?></span>
+		<span class="shrink-0 text-[11px] text-slate-400"><?php echo esc_html( get_the_date( 'j F', $id ) ); ?></span>
 	</a>
 	<?php
 	return ob_get_clean();
@@ -775,23 +759,46 @@ function dolat_get_top_estelam( $count = 6 ) {
 }
 
 /**
- * تابلو اعلانات سایت‌های دولتی
- * چند ردیف با جهت و سرعت متفاوت، چیدمان نامنظم
+ * تابلو اعلانات سازمان‌های دولتی
+ * دو ردیف منظم و هم‌تراز، با حرکت آرام در جهت مخالف هم.
+ * داده از صفحه «سازمان‌های دولتی» خوانده می‌شود؛ اگر خالی بود، از پست‌تایپ قدیمی govsite.
  */
-function dolat_render_govsites( $rows = 3 ) {
-	$sites = get_posts( array(
-		'post_type'      => 'govsite',
-		'posts_per_page' => -1,
-		'orderby'        => 'menu_order title',
-		'order'          => 'ASC',
-		'no_found_rows'  => true,
-	) );
-	if ( ! $sites ) return '';
+function dolat_render_govsites( $rows = 2 ) {
+	$items = array();
 
-	// تقسیم بین ردیف‌ها
+	// ۱) لیست جدید (صفحه مدیریت سازمان‌های دولتی)
+	foreach ( dolat_get_govsites() as $r ) {
+		$items[] = array(
+			'title' => isset( $r['title'] ) ? $r['title'] : '',
+			'url'   => isset( $r['url'] ) ? $r['url'] : '',
+			'logo'  => ! empty( $r['logo'] ) ? wp_get_attachment_image_url( (int) $r['logo'], 'medium' ) : '',
+		);
+	}
+
+	// ۲) سازگاری با داده‌های قبلی پست‌تایپ govsite
+	if ( ! $items ) {
+		$sites = get_posts( array(
+			'post_type'      => 'govsite',
+			'posts_per_page' => -1,
+			'orderby'        => 'menu_order title',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		) );
+		foreach ( $sites as $site ) {
+			$items[] = array(
+				'title' => $site->post_title,
+				'url'   => get_post_meta( $site->ID, '_dolat_site_url', true ),
+				'logo'  => has_post_thumbnail( $site->ID ) ? get_the_post_thumbnail_url( $site->ID, 'medium' ) : '',
+			);
+		}
+	}
+
+	if ( ! $items ) return '';
+
+	$rows  = max( 1, (int) $rows );
 	$lanes = array_fill( 0, $rows, array() );
-	foreach ( $sites as $i => $site ) {
-		$lanes[ $i % $rows ][] = $site;
+	foreach ( $items as $i => $it ) {
+		$lanes[ $i % $rows ][] = $it;
 	}
 
 	ob_start();
@@ -800,37 +807,25 @@ function dolat_render_govsites( $rows = 3 ) {
 		<?php foreach ( $lanes as $li => $lane ) :
 			if ( empty( $lane ) ) continue;
 			$dir      = ( $li % 2 === 0 ) ? 'rtl' : 'ltr';
-			$duration = 34 + ( $li * 9 );
+			$duration = 38 + ( $li * 8 );
 		?>
 			<div class="d-govlane d-govlane-<?php echo esc_attr( $dir ); ?>" style="--d-lane-time:<?php echo esc_attr( $duration ); ?>s">
 				<div class="d-govtrack">
 					<?php for ( $copy = 0; $copy < 2; $copy++ ) : ?>
-						<?php foreach ( $lane as $si => $site ) :
-							$url   = get_post_meta( $site->ID, '_dolat_site_url', true );
-							$desc  = get_post_meta( $site->ID, '_dolat_site_desc', true );
-							$emoji = get_post_meta( $site->ID, '_dolat_site_emoji', true ) ?: '🏛';
-							$logo  = has_post_thumbnail( $site->ID ) ? get_the_post_thumbnail_url( $site->ID, 'medium' ) : '';
-							// چیدمان نامنظم: جابه‌جایی عمودی و اندازه متفاوت
-							$offset = array( 0, 14, -10, 8, -16, 6 )[ $si % 6 ];
-							$scale  = array( 1, .92, 1.06, .96, 1.02, .9 )[ $si % 6 ];
-						?>
+						<?php foreach ( $lane as $site ) : ?>
 						<a class="d-govitem"
-						   href="<?php echo $url ? esc_url( $url ) : '#'; ?>"
+						   href="<?php echo $site['url'] ? esc_url( $site['url'] ) : '#'; ?>"
 						   target="_blank" rel="noopener nofollow"
-						   title="<?php echo esc_attr( $site->post_title ); ?>"
-						   style="transform:translateY(<?php echo (int) $offset; ?>px) scale(<?php echo esc_attr( $scale ); ?>);"
+						   title="<?php echo esc_attr( $site['title'] ); ?>"
 						   <?php echo $copy ? 'aria-hidden="true" tabindex="-1"' : ''; ?>>
 							<span class="d-govitem-logo">
-								<?php if ( $logo ) : ?>
-									<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site->post_title ); ?>" loading="lazy">
+								<?php if ( $site['logo'] ) : ?>
+									<img src="<?php echo esc_url( $site['logo'] ); ?>" alt="<?php echo esc_attr( $site['title'] ); ?>" loading="lazy">
 								<?php else : ?>
-									<span class="d-govitem-emoji"><?php echo esc_html( $emoji ); ?></span>
+									<span class="d-govitem-emoji">🏛</span>
 								<?php endif; ?>
 							</span>
-							<span class="d-govitem-body">
-								<span class="d-govitem-name"><?php echo esc_html( $site->post_title ); ?></span>
-								<?php if ( $desc ) : ?><span class="d-govitem-desc"><?php echo esc_html( $desc ); ?></span><?php endif; ?>
-							</span>
+							<span class="d-govitem-name"><?php echo esc_html( $site['title'] ); ?></span>
 						</a>
 						<?php endforeach; ?>
 					<?php endfor; ?>

@@ -46,6 +46,7 @@ require_once DOLAT_THEME_DIR . '/inc/ads.php';
 require_once DOLAT_THEME_DIR . '/inc/reports.php';
 require_once DOLAT_THEME_DIR . '/inc/footer-settings.php';
 require_once DOLAT_THEME_DIR . '/inc/seo.php';
+require_once DOLAT_THEME_DIR . '/inc/govsites.php';
 
 /* ─────────────────────────────
    عرض محتوا برای embed ها

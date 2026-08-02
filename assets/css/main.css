@@ -135,35 +135,46 @@ html{ scroll-behavior:smooth; }
    تابلوی سایت‌های دولتی (مارکی نامنظم)
    ══════════════════════════════════ */
 .d-govboard{
-  position:relative; overflow:hidden; padding:16px 0;
-  background:linear-gradient(160deg,var(--d-navy),var(--d-navy-2));
-  border:1px solid var(--d-navy-2); border-radius:var(--d-radius-md);
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
-          mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  position:relative; overflow:hidden; padding:18px 0;
+  /* شیشه‌ای طوسی ملایم به‌جای سرمه‌ای تند */
+  background:linear-gradient(160deg, rgba(148,163,184,.20), rgba(100,116,139,.12));
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(148,163,184,.30); border-radius:14px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
 }
-.d-govlane{ overflow:hidden; height:74px; margin-bottom:4px; }
-.d-govlane:last-child{ margin-bottom:0; }
-.d-govtrack{ display:flex; gap:14px; width:max-content; align-items:center; height:100%; }
-.d-govlane-rtl .d-govtrack{ animation:dGovScrollRtl var(--d-lane-time,36s) linear infinite; }
-.d-govlane-ltr .d-govtrack{ animation:dGovScrollLtr var(--d-lane-time,36s) linear infinite; }
+body.theme-dark .d-govboard{
+  background:linear-gradient(160deg, rgba(148,163,184,.14), rgba(51,65,85,.20));
+  border-color:rgba(148,163,184,.20);
+}
+/* دو ردیف منظم و هم‌تراز */
+.d-govlane{ overflow:hidden; height:66px; }
+.d-govlane + .d-govlane{ margin-top:10px; }
+.d-govtrack{ display:flex; gap:12px; width:max-content; align-items:center; height:100%; }
+.d-govlane-rtl .d-govtrack{ animation:dGovScrollRtl var(--d-lane-time,38s) linear infinite; }
+.d-govlane-ltr .d-govtrack{ animation:dGovScrollLtr var(--d-lane-time,38s) linear infinite; }
 .d-govboard.paused .d-govtrack{ animation-play-state:paused; }
 @keyframes dGovScrollRtl{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
 @keyframes dGovScrollLtr{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
 
 .d-govitem{
-  flex-shrink:0; display:flex; align-items:center; gap:9px;
-  background:rgba(255,255,255,.07); border:1px solid rgba(226,201,138,.3);
-  border-radius:var(--d-radius-sm); padding:9px 13px 9px 11px;
-  transition:background .18s, border-color .18s;
+  flex-shrink:0; display:flex; align-items:center; gap:10px;
+  height:52px; box-sizing:border-box;
+  background:rgba(255,255,255,.72); border:1px solid rgba(148,163,184,.35);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  border-radius:10px; padding:0 14px 0 10px;
+  transition:background .18s, border-color .18s, transform .18s;
 }
-.d-govitem:hover{ background:rgba(255,255,255,.15); border-color:var(--d-gold); }
+.d-govitem:hover{ background:#fff; border-color:var(--d-gold); transform:translateY(-2px); }
+body.theme-dark .d-govitem{ background:rgba(30,41,59,.65); border-color:rgba(148,163,184,.25); }
+body.theme-dark .d-govitem:hover{ background:rgba(30,41,59,.9); border-color:var(--d-gold); }
 .d-govitem-logo{
-  width:36px; height:36px; flex-shrink:0; background:#fff; border-radius:var(--d-radius-sm);
+  width:34px; height:34px; flex-shrink:0; background:#fff; border-radius:8px;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
+  border:1px solid rgba(148,163,184,.25);
 }
 .d-govitem-logo img{ width:100%; height:100%; object-fit:contain; padding:3px; }
-.d-govitem-emoji{ font-size:19px; }
-.d-govitem-body{ display:flex; flex-direction:column; }
-.d-govitem-name{ font-size:12.5px; font-weight:800; color:#fff; white-space:nowrap; }
-.d-govitem-desc{ font-size:10.5px; color:#9fb0bd; white-space:nowrap; }
+.d-govitem-emoji{ font-size:18px; }
+.d-govitem-name{ font-size:12.5px; font-weight:800; color:var(--d-text-heading); white-space:nowrap; }
+body.theme-dark .d-govitem-name{ color:#e2e8f0; }
 @media(prefers-reduced-motion:reduce){ .d-govtrack{ animation:none !important; } }

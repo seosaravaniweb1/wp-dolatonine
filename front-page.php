@@ -12,13 +12,13 @@ $rest_cats   = array_slice( $parent_cats, $box_limit );
 
 $quick_access = dolat_get_top_estelam( 5 );   // دسترسی سریع: ۵ پربازدیدترین استعلام (فقط عنوان)
 $latest_news  = dolat_get_latest_news( 10 );  // کاروسل «جدیدترین اخبار»
-$govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌های دولتی (از پست‌تایپ govsite)
+$govsites     = dolat_render_govsites( 2 );   // تابلوی سازمان‌ها — دو ردیف (نمایش ← سازمان‌های دولتی)
 ?>
 
-<main id="main" class="mx-auto max-w-7xl px-4 pb-16">
+<main id="main" class="pb-16">
 
-	<!-- ══ ۱) هدر و دسترسی سریع ══ -->
-	<section class="relative -mx-4 overflow-hidden bg-gradient-to-b from-dnavy to-[#0d2c3d] px-4 py-10 text-center text-white sm:py-14">
+	<!-- ══ ۱) هدر و دسترسی سریع (تمام‌عرض) ══ -->
+	<section class="relative w-full overflow-hidden bg-gradient-to-b from-dnavy to-[#0d2c3d] px-4 py-12 text-center text-white sm:py-16">
 		<div class="pointer-events-none absolute inset-0 opacity-10" style="background-image:repeating-linear-gradient(45deg, #c39b45 0 1px, transparent 1px 14px), repeating-linear-gradient(-45deg, #c39b45 0 1px, transparent 1px 14px);"></div>
 
 		<div class="relative mx-auto max-w-2xl">
@@ -52,6 +52,9 @@ $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌ه�
 			<?php endif; ?>
 		</div>
 	</section>
+
+	<!-- بقیه صفحه داخل ظرف با عرض محدود -->
+	<div class="mx-auto max-w-7xl px-4">
 
 	<!-- ══ ۲) کاروسل جدیدترین اخبار ══ -->
 	<?php if ( $latest_news ) : ?>
@@ -111,24 +114,17 @@ $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌ه�
 					<?php endforeach; ?>
 				</div>
 
-				<!-- محتوای تب‌ها -->
+				<!-- محتوای تب‌ها: ۶ آیتم یکدست، داخل ناحیه اسکرول با ارتفاع ثابت -->
 				<?php foreach ( $tabs as $i => $tab ) :
-					$posts     = dolat_get_frontpage_tab_posts( $cat, $tab['key'], 6 );
-					$big_posts = array_slice( $posts, 0, 2 );
-					$more_posts = array_slice( $posts, 2, 4 );
+					$posts = dolat_get_frontpage_tab_posts( $cat, $tab['key'], 6 );
 				?>
 				<div class="d-frontbox-panel <?php echo 0 === $i ? '' : 'hidden'; ?>" data-panel-cat="<?php echo (int) $cat->term_id; ?>" data-panel-type="<?php echo esc_attr( $tab['key'] ); ?>">
 					<?php if ( empty( $posts ) ) : ?>
-						<p class="py-6 text-center text-sm text-slate-400">موردی ثبت نشده است.</p>
+						<p class="flex h-64 items-center justify-center text-sm text-slate-400">موردی ثبت نشده است.</p>
 					<?php else : ?>
-						<div class="space-y-2">
-							<?php foreach ( $big_posts as $p ) echo dolat_render_frontbox_big_item( $p, $tab['key'] ); ?>
+						<div class="h-64 space-y-1.5 overflow-y-auto pe-1 [scrollbar-width:thin]">
+							<?php foreach ( $posts as $p ) echo dolat_render_frontbox_item( $p, $tab['key'] ); ?>
 						</div>
-						<?php if ( $more_posts ) : ?>
-							<div class="mt-3 max-h-40 overflow-y-auto ps-1">
-								<?php foreach ( $more_posts as $p ) echo dolat_render_frontbox_list_item( $p, $tab['key'] ); ?>
-							</div>
-						<?php endif; ?>
 					<?php endif; ?>
 				</div>
 				<?php endforeach; ?>
@@ -161,20 +157,16 @@ $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌ه�
 
 	<!-- ══ ۴) تابلو اعلانات سازمان‌های دولتی ══ -->
 	<?php if ( $govsites ) : ?>
-	<section class="relative mt-8 -mx-4 overflow-hidden px-4 py-8">
-		<!-- پترن سنتی اسلیمی با شفافیت بسیار پایین -->
-		<div class="pointer-events-none absolute inset-0 opacity-[0.06] dark:opacity-[0.08]" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22><path d=%22M60 5c8 15-8 20 0 35 8 15-8 20 0 35 8 15-8 20 0 35M25 60c15-8 20 8 35 0 15-8 20 8 35 0M5 60c8-15 20 8 35 0M115 60c-8-15-20 8-35 0%22 fill=%22none%22 stroke=%22%23c39b45%22 stroke-width=%221.4%22/><circle cx=%2260%22 cy=%2260%22 r=%224%22 fill=%22none%22 stroke=%22%23c39b45%22 stroke-width=%221.4%22/></svg>'); background-repeat:repeat;"></div>
-
-		<div class="relative">
-			<div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-200 pb-2 dark:border-slate-700">
-				<h2 class="text-lg font-extrabold text-dnavy dark:text-white">تابلو اعلانات سازمان‌های دولتی</h2>
-				<span class="text-xs text-slate-400">برای ورود مستقیم، روی هر سازمان کلیک کنید</span>
-			</div>
-			<?php echo $govsites; // phpcs:ignore ?>
+	<section class="mt-8">
+		<div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-200 pb-2 dark:border-slate-700">
+			<h2 class="text-lg font-extrabold text-dnavy dark:text-white">تابلو اعلانات سازمان‌های دولتی</h2>
+			<span class="text-xs text-slate-400">برای ورود مستقیم، روی هر سازمان کلیک کنید</span>
 		</div>
+		<?php echo $govsites; // phpcs:ignore ?>
 	</section>
 	<?php endif; ?>
 
+	</div><!-- /ظرف -->
 </main>
 
 <?php get_footer(); ?>
