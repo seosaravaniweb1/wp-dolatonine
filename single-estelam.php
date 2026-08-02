@@ -6,7 +6,7 @@ while ( have_posts() ) : the_post();
 	$id   = get_the_ID();
 	$data = dolat_get_estelam_payload( $id );
 ?>
-<main class="d-single-estelam mx-auto max-w-3xl px-4 pb-16 pt-6">
+<main id="main" class="d-single-estelam mx-auto max-w-3xl px-4 pb-16 pt-6">
 	<?php dolat_breadcrumb( $id ); ?>
 	<div class="mb-6"><?php dolat_ad( 'post_top' ); ?></div>
 

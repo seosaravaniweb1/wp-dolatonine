@@ -15,7 +15,7 @@ $latest_news  = dolat_get_latest_news( 10 );  // کاروسل «جدیدترین
 $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌های دولتی (از پست‌تایپ govsite)
 ?>
 
-<main class="mx-auto max-w-7xl px-4 pb-16">
+<main id="main" class="mx-auto max-w-7xl px-4 pb-16">
 
 	<!-- ══ ۱) هدر و دسترسی سریع ══ -->
 	<section class="relative -mx-4 overflow-hidden bg-gradient-to-b from-dnavy to-[#0d2c3d] px-4 py-10 text-center text-white sm:py-14">
@@ -31,12 +31,12 @@ $govsites     = dolat_render_govsites( 3 );   // تابلوی سازمان‌ه�
 			<?php endif; ?>
 
 			<!-- جستجوی Ajax -->
-			<div class="relative mx-auto mt-6 max-w-xl">
-				<input type="text" id="dHeroSearchInput" class="w-full rounded-lg border-2 border-dgold bg-white py-3 pe-4 ps-14 text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="نام مطلب یا استعلام مورد نظر را بنویسید…" autocomplete="off">
-				<button type="button" id="dHeroSearchBtn" class="absolute inset-y-1 start-1 flex w-10 items-center justify-center rounded-md bg-dnavy text-dgold" aria-label="جستجو">
+			<form role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="relative mx-auto mt-6 max-w-xl">
+				<input type="text" name="s" id="dHeroSearchInput" class="w-full rounded-lg border-2 border-dgold bg-white py-3 pe-4 ps-14 text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="نام مطلب یا استعلام مورد نظر را بنویسید…" autocomplete="off">
+				<button type="submit" id="dHeroSearchBtn" class="absolute inset-y-1 start-1 flex w-10 items-center justify-center rounded-md bg-dnavy text-dgold" aria-label="جستجو">
 					<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m21 21-3.8-3.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 				</button>
-			</div>
+			</form>
 			<div id="dHeroSearchResults" class="mx-auto mt-2 max-w-xl overflow-hidden rounded-lg bg-white text-right shadow-lg empty:hidden dark:bg-slate-900"></div>
 
 			<!-- دسترسی سریع: ۵ پربازدیدترین استعلام -->

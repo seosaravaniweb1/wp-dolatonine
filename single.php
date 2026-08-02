@@ -21,7 +21,7 @@ while ( have_posts() ) : the_post();
 	}
 	$badge_term = $sub ?: $root;
 ?>
-<main class="mx-auto max-w-3xl px-4 pb-16 pt-6">
+<main id="main" class="mx-auto max-w-3xl px-4 pb-16 pt-6">
 	<?php dolat_breadcrumb( $post_id ); ?>
 
 	<article class="rounded-2xl border-t-4 bg-white p-5 shadow-sm dark:bg-slate-800 sm:p-8" style="border-top-color:<?php echo esc_attr( $color ); ?>">

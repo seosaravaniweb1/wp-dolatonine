@@ -192,10 +192,9 @@
 	}
 
 	function initHeroSearch() {
-		var input = $('#dHeroSearchInput'), results = $('#dHeroSearchResults'), btn = $('#dHeroSearchBtn');
+		var input = $('#dHeroSearchInput'), results = $('#dHeroSearchResults');
 		if (!input) return;
 		bindLiveSearch(input, results);
-		if (btn) btn.addEventListener('click', function () { input.focus(); });
 	}
 
 	/* ---------- جستجوی Ajax مخصوص آرشیو استعلام‌ها (فقط پست‌تایپ estelam) ---------- */

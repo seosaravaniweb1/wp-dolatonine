@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 ?>
-<main class="mx-auto max-w-3xl px-4 pb-16 pt-8">
+<main id="main" class="mx-auto max-w-3xl px-4 pb-16 pt-8">
 	<div class="mb-6 border-b-2 border-slate-200 pb-3 dark:border-slate-700">
 		<h1 class="text-xl font-extrabold text-dnavy dark:text-white">نتایج جستجو برای: «<?php echo esc_html( get_search_query() ); ?>»</h1>
 	</div>

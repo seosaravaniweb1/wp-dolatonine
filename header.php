@@ -27,6 +27,8 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 <body <?php body_class( ( $dolat_dark_default ? 'theme-dark ' : '' ) . 'font-sans bg-dcream text-slate-800 dark:bg-slate-900 dark:text-slate-100' ); ?>>
 <?php wp_body_open(); ?>
 
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-dnavy focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">رفتن به محتوای اصلی</a>
+
 <!-- نوار بالای سایت -->
 <div class="border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
 	<div class="mx-auto grid max-w-7xl grid-cols-2 items-center gap-3 px-4 py-2 md:grid-cols-3">
@@ -144,10 +146,10 @@ $dolat_phone         = get_theme_mod( 'dolat_contact_phone', '' );
 <!-- پنل جستجو -->
 <div class="fixed inset-0 z-[60] hidden bg-black/50" id="dSearchPanel">
 	<div class="mx-auto mt-16 w-[92%] max-w-xl rounded-xl bg-white p-4 shadow-2xl dark:bg-slate-900">
-		<div class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
-			<input type="text" id="dSearchInput" class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100" placeholder="نام خدمت یا استعلام مورد نظر را بنویسید…" autocomplete="off">
+		<form role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
+			<input type="text" name="s" id="dSearchInput" class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100" placeholder="نام خدمت یا استعلام مورد نظر را بنویسید…" autocomplete="off">
 			<button type="button" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" id="dSearchCloseBtn" aria-label="بستن جستجو">✕</button>
-		</div>
+		</form>
 		<div class="mt-3 max-h-[60vh] overflow-y-auto" id="dSearchResults"></div>
 	</div>
 </div>

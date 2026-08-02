@@ -10,7 +10,7 @@ get_header();
 
 $title = wp_strip_all_tags( get_the_archive_title() );
 ?>
-<main class="mx-auto max-w-5xl px-4 pb-16 pt-8">
+<main id="main" class="mx-auto max-w-5xl px-4 pb-16 pt-8">
 	<div class="mb-6 border-b-2 border-slate-200 pb-3 dark:border-slate-700">
 		<h1 class="text-xl font-extrabold text-dnavy dark:text-white"><?php echo esc_html( $title ); ?></h1>
 		<?php $desc = get_the_archive_description(); ?>

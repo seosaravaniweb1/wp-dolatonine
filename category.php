@@ -19,6 +19,7 @@ $live_comments = dolat_get_category_live_comments( $category->term_id, 4 );
 $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 ?>
 
+<main id="main">
 <!-- هدر تیره -->
 <section class="relative overflow-hidden bg-gradient-to-b from-dnavy to-[#0d2c3d] px-4 pb-8 pt-10 text-center text-white sm:pb-10 sm:pt-14">
 	<div class="pointer-events-none absolute inset-0 opacity-10" style="background-image:repeating-linear-gradient(45deg, #c39b45 0 1px, transparent 1px 14px), repeating-linear-gradient(-45deg, #c39b45 0 1px, transparent 1px 14px);"></div>
@@ -137,5 +138,6 @@ $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 		</aside>
 	</div>
 </div>
+</main>
 
 <?php get_footer(); ?>

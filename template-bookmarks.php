@@ -7,7 +7,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 ?>
-<main class="mx-auto max-w-3xl px-4 pb-16 pt-8">
+<main id="main" class="mx-auto max-w-3xl px-4 pb-16 pt-8">
 	<div class="mb-6 border-b-2 border-slate-200 pb-3 dark:border-slate-700">
 		<h1 class="text-xl font-extrabold text-dnavy dark:text-white">استعلام‌های من</h1>
 		<p class="mt-1 text-xs text-slate-400">این لیست فقط روی همین مرورگر ذخیره می‌شود. با کلیک روی 🔖 کنار هر استعلام، آن را اینجا اضافه یا حذف کنید.</p>

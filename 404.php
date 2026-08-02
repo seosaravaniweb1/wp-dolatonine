@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 ?>
-<main class="mx-auto max-w-xl px-4 py-20 text-center">
+<main id="main" class="mx-auto max-w-xl px-4 py-20 text-center">
 	<div class="mb-4 text-5xl">🔍</div>
 	<h1 class="text-xl font-black text-slate-800 dark:text-white">صفحه مورد نظر یافت نشد</h1>
 	<p class="mt-3 text-sm text-slate-500 dark:text-slate-400">ممکن است آدرس اشتباه باشد یا محتوا حذف شده باشد.</p>

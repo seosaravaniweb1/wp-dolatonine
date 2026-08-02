@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 ?>
-<main class="mx-auto max-w-3xl px-4 pb-16 pt-8">
+<main id="main" class="mx-auto max-w-3xl px-4 pb-16 pt-8">
 	<div class="mb-6 border-b-2 border-slate-200 pb-3 dark:border-slate-700">
 		<h1 class="text-xl font-extrabold text-dnavy dark:text-white"><?php echo ( is_home() && ! is_front_page() ) ? esc_html( single_post_title( '', false ) ) : esc_html( get_the_title() ); ?></h1>
 	</div>
