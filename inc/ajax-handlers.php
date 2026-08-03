@@ -90,6 +90,34 @@ function dolat_ajax_search() {
 add_action( 'wp_ajax_dolat_search', 'dolat_ajax_search' );
 add_action( 'wp_ajax_nopriv_dolat_search', 'dolat_ajax_search' );
 
+/* بارگذاری نوشته‌های یک زیردسته برای تب‌های صفحه دسته */
+function dolat_ajax_cat_posts() {
+	check_ajax_referer( 'dolat_nonce', 'nonce' );
+
+	$term = isset( $_POST['term'] ) ? absint( $_POST['term'] ) : 0;
+	if ( ! $term ) wp_send_json_error( 'دسته نامعتبر' );
+
+	$q = new WP_Query( array(
+		'post_type'      => 'post',
+		'posts_per_page' => 10,
+		'no_found_rows'  => true,
+		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $term, 'include_children' => true ) ),
+	) );
+
+	if ( ! $q->have_posts() ) {
+		wp_send_json_success( array( 'html' => '<div class="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">مطلبی در این زیربخش یافت نشد.</div>' ) );
+	}
+
+	$html = '';
+	foreach ( $q->posts as $i => $p ) {
+		$html .= dolat_render_category_post_card( $p->ID );
+		if ( 0 === ( $i + 1 ) % 4 ) $html .= dolat_ad( 'archive_middle', false );
+	}
+	wp_send_json_success( array( 'html' => $html ) );
+}
+add_action( 'wp_ajax_dolat_cat_posts', 'dolat_ajax_cat_posts' );
+add_action( 'wp_ajax_nopriv_dolat_cat_posts', 'dolat_ajax_cat_posts' );
+
 /* کارت استعلام‌های نشان‌شده (localStorage سمت کاربر) برای صفحه «استعلام‌های من» */
 function dolat_ajax_get_bookmarks() {
 	check_ajax_referer( 'dolat_nonce', 'nonce' );

@@ -47,21 +47,6 @@ $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 	</div>
 </section>
 
-<!-- تب‌های زیردسته: فقط روی دسته مادر -->
-<?php if ( $is_root && $subcats && ! is_wp_error( $subcats ) ) : ?>
-	<div class="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-		<div class="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3">
-			<a href="<?php echo esc_url( get_term_link( $category ) ); ?>" class="rounded-full bg-dnavy px-3 py-1.5 text-xs font-bold text-white">همه</a>
-			<?php foreach ( $subcats as $sc ) :
-				$sc_icon = dolat_category_icon( $sc );
-			?>
-				<a href="<?php echo esc_url( get_term_link( $sc ) ); ?>" class="rounded-full px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">
-					<?php if ( $sc_icon ) echo esc_html( $sc_icon ) . ' '; ?><?php echo esc_html( $sc->name ); ?>
-				</a>
-			<?php endforeach; ?>
-		</div>
-	</div>
-<?php endif; ?>
 
 <div class="mx-auto max-w-7xl px-4 pb-16 pt-6">
 	<!-- items-start: سایدبار زیر هدر می‌ماند و از overlap ردیف پربازدیدها تأثیر نمی‌گیرد -->
@@ -82,8 +67,22 @@ $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 
 			<?php dolat_ad( 'archive_top' ); ?>
 
+			<!-- تب زیردسته‌ها: فقط روی دسته مادر. محتوا در جا با AJAX عوض می‌شود. -->
+			<?php if ( $is_root && $subcats && ! is_wp_error( $subcats ) ) : ?>
+				<div id="dCatTabs" class="mb-4 flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-700">
+					<button type="button" class="d-cat-tab border-b-2 border-dgold px-3 py-2 text-sm font-bold text-dnavy transition dark:text-dgold" data-term="0">همه</button>
+					<?php foreach ( $subcats as $sc ) :
+						$sc_icon = dolat_category_icon( $sc );
+					?>
+						<button type="button" class="d-cat-tab border-b-2 border-transparent px-3 py-2 text-sm font-bold text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300" data-term="<?php echo (int) $sc->term_id; ?>">
+							<?php if ( $sc_icon ) echo esc_html( $sc_icon ) . ' '; ?><?php echo esc_html( $sc->name ); ?>
+						</button>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
 			<!-- لیست اصلی + تبلیغ میان‌پستی هر ۴ پست -->
-			<div class="grid grid-cols-1 gap-4">
+			<div id="dCatList" class="grid grid-cols-1 gap-4">
 				<?php if ( have_posts() ) :
 					$i = 0;
 					while ( have_posts() ) : the_post();
@@ -96,7 +95,7 @@ $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 				<?php endif; ?>
 			</div>
 
-			<div class="mt-6 flex flex-wrap justify-center gap-1 [&_.page-numbers]:mx-0.5 [&_.page-numbers]:inline-flex [&_.page-numbers]:h-9 [&_.page-numbers]:min-w-9 [&_.page-numbers]:items-center [&_.page-numbers]:justify-center [&_.page-numbers]:rounded-lg [&_.page-numbers]:border [&_.page-numbers]:border-slate-200 [&_.page-numbers]:px-2 [&_.page-numbers]:text-sm [&_.page-numbers]:text-slate-600 [&_.page-numbers.current]:border-dnavy [&_.page-numbers.current]:bg-dnavy [&_.page-numbers.current]:text-white dark:[&_.page-numbers]:border-slate-700 dark:[&_.page-numbers]:text-slate-300">
+			<div id="dCatPagination" class="mt-6 flex flex-wrap justify-center gap-1 [&_.page-numbers]:mx-0.5 [&_.page-numbers]:inline-flex [&_.page-numbers]:h-9 [&_.page-numbers]:min-w-9 [&_.page-numbers]:items-center [&_.page-numbers]:justify-center [&_.page-numbers]:rounded-lg [&_.page-numbers]:border [&_.page-numbers]:border-slate-200 [&_.page-numbers]:px-2 [&_.page-numbers]:text-sm [&_.page-numbers]:text-slate-600 [&_.page-numbers.current]:border-dnavy [&_.page-numbers.current]:bg-dnavy [&_.page-numbers.current]:text-white dark:[&_.page-numbers]:border-slate-700 dark:[&_.page-numbers]:text-slate-300">
 				<?php the_posts_pagination( array( 'prev_text' => '← قبلی', 'next_text' => 'بعدی →' ) ); ?>
 			</div>
 

@@ -138,6 +138,50 @@
 		});
 	}
 
+	/* ---------- تب زیردسته‌ها در صفحه دسته مادر ---------- */
+	function initCategorySubTabs() {
+		var bar = $('#dCatTabs'), list = $('#dCatList'), pager = $('#dCatPagination');
+		if (!bar || !list) return;
+
+		var tabs = $$('.d-cat-tab', bar);
+		var originalHtml = list.innerHTML; // محتوای تب «همه» برای بازگشت بدون درخواست دوباره
+
+		tabs.forEach(function (tab) {
+			tab.addEventListener('click', function () {
+				if (tab.classList.contains('is-active')) return;
+
+				tabs.forEach(function (t) {
+					var active = t === tab;
+					t.classList.toggle('is-active', active);
+					t.classList.toggle('border-dgold', active);
+					t.classList.toggle('text-dnavy', active);
+					t.classList.toggle('dark:text-dgold', active);
+					t.classList.toggle('border-transparent', !active);
+					t.classList.toggle('text-slate-400', !active);
+				});
+
+				var term = tab.getAttribute('data-term');
+
+				// تب «همه»: محتوای اصلی صفحه با صفحه‌بندی برمی‌گردد
+				if (term === '0') {
+					list.innerHTML = originalHtml;
+					if (pager) pager.classList.remove('hidden');
+					return;
+				}
+
+				if (pager) pager.classList.add('hidden');
+				list.classList.add('opacity-40');
+				fetchAjax('dolat_cat_posts', { term: term }).then(function (res) {
+					list.classList.remove('opacity-40');
+					if (res && res.html) list.innerHTML = res.html;
+				});
+			});
+		});
+
+		// تب «همه» از ابتدا فعال است
+		if (tabs.length) tabs[0].classList.add('is-active');
+	}
+
 	/* ---------- کاروسل جدیدترین اخبار (صفحه اصلی) ---------- */
 	function initNewsSlider() {
 		var track = $('#dNewsSlider');
@@ -643,6 +687,7 @@
 		initMegaMenu();
 		initLiveClock();
 		initFrontCategoryTabs();
+		initCategorySubTabs();
 		initNewsSlider();
 		initFooterDynTabs();
 		initHeaderSearch();
