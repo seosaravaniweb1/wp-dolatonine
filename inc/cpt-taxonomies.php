@@ -393,7 +393,7 @@ add_action( 'add_meta_boxes', function() {
 	remove_meta_box( 'categorydiv', 'estelam', 'side' );
 	add_meta_box(
 		'dolat_estelam_parent_cat',
-		'دسته مادر',
+		'دسته استعلام',
 		'dolat_render_estelam_cat_box',
 		'estelam',
 		'side',
@@ -410,7 +410,7 @@ function dolat_render_estelam_cat_box( $post ) {
 		echo '<p>هنوز هیچ دسته‌ای نساخته‌اید. از «نوشته‌ها ← دسته‌ها» دسته مادر بسازید.</p>';
 		return;
 	}
-	echo '<p style="margin-top:0;color:#666;">این استعلام زیر کدام بخش صفحه اصلی نمایش داده شود؟</p>';
+	echo '<p style="margin-top:0;color:#666;">این استعلام در لیست کدام بخش بیاید؟ مثلا با انتخاب «یارانه» در لیست <strong>استعلام یارانه</strong> و در مگامنو و صفحه اصلی همان بخش نمایش داده می‌شود.</p>';
 	echo '<ul style="max-height:260px;overflow:auto;margin:0;">';
 	foreach ( $parents as $t ) {
 		printf(

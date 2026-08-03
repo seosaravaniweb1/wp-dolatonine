@@ -73,11 +73,18 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 		<!-- ستون اصلی -->
 		<div class="min-w-0 flex-1">
 
-			<!-- پرطرفدارترین خدمات: روی مرز هدر تیره overlap می‌شود -->
-			<?php if ( $top_items ) : ?>
+			<!-- پرطرفدارترین خدمات: روی مرز هدر تیره overlap می‌شود، پس عنوان همیشه سفید است -->
+			<?php if ( $top_items ) :
+				// وقتی آیتم‌ها کمتر از ۵ تاست، ستون‌ها را به تعدادشان محدود کن تا شبکه خالی و پراکنده نشود
+				$top_count = count( $top_items );
+				$top_cols  = 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5';
+				if ( $top_count <= 2 )      $top_cols = 'grid-cols-2';
+				elseif ( $top_count === 3 ) $top_cols = 'grid-cols-2 sm:grid-cols-3';
+				elseif ( $top_count === 4 ) $top_cols = 'grid-cols-2 sm:grid-cols-4';
+			?>
 				<div class="relative -mt-14 mb-6 sm:-mt-16 md:-mt-20">
-					<h2 class="mb-3 text-sm font-extrabold text-white sm:text-white md:text-slate-700 md:dark:text-slate-200">پرطرفدارترین خدمات</h2>
-					<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+					<h2 class="mb-3 text-sm font-extrabold text-white">پرطرفدارترین خدمات</h2>
+					<div class="grid gap-3 <?php echo esc_attr( $top_cols ); ?>">
 						<?php foreach ( $top_items as $i => $p ) echo dolat_render_estelam_top_card( $p->ID, $i + 1 ); ?>
 					</div>
 				</div>
@@ -85,25 +92,54 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 
 			<?php dolat_ad( 'archive_top' ); ?>
 
-			<!-- تب‌های برچسب — فقط در آرشیو کلی استعلام‌ها -->
-			<?php if ( $is_archive && ! empty( $tag_terms ) && ! is_wp_error( $tag_terms ) ) : ?>
+			<!-- تب دسته‌ها: لیست استعلام هر بخش جدا فراخوانی می‌شود -->
+			<?php
+			$estelam_cats = $is_archive ? dolat_get_categories_with_estelam() : array();
+			$has_cat_tabs = ! empty( $estelam_cats );
+			if ( $has_cat_tabs ) :
+				$tab_base = 'whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition';
+			?>
 				<div class="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-slate-700">
-					<span class="text-xs font-bold text-slate-400">دسته‌بندی خدمات استعلام‌ها:</span>
-					<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="rounded-full px-3 py-1.5 text-xs font-bold transition <?php echo ! is_tax( 'estelam_tag' ) ? 'bg-dnavy text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>">همه</a>
+					<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>"
+					   class="<?php echo esc_attr( $tab_base ); ?> <?php echo ! $filter_cat ? 'bg-dnavy text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>">
+						همه استعلام‌ها
+					</a>
+					<?php foreach ( $estelam_cats as $ec ) :
+						$ec_active = $filter_cat && (int) $filter_cat->term_id === (int) $ec->term_id;
+						$ec_color  = dolat_category_color( $ec );
+						$ec_icon   = dolat_category_icon( $ec );
+					?>
+						<a href="<?php echo esc_url( dolat_estelam_archive_link_for_cat( $ec->term_id ) ); ?>"
+						   class="<?php echo esc_attr( $tab_base ); ?> <?php echo $ec_active ? 'text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>"
+						   <?php echo $ec_active ? 'style="background:' . esc_attr( $ec_color ) . '"' : ''; ?>>
+							<?php if ( $ec_icon ) echo esc_html( $ec_icon ) . ' '; ?>استعلام <?php echo esc_html( $ec->name ); ?>
+						</a>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
+			<!-- برچسب‌های استعلام (خودرو/مالی/…) فقط اگر تعریف شده باشند -->
+			<?php $dolat_has_tag_bar = ( $is_archive && ! $filter_cat && ! empty( $tag_terms ) && ! is_wp_error( $tag_terms ) ); ?>
+			<?php if ( $dolat_has_tag_bar ) : ?>
+				<div class="mb-4 flex flex-wrap items-center gap-2">
+					<span class="text-xs font-bold text-slate-400">برچسب:</span>
 					<?php foreach ( $tag_terms as $t ) :
 						$active = is_tax( 'estelam_tag', $t->slug );
 						$c      = dolat_tag_color( $t->name );
 					?>
 						<a href="<?php echo esc_url( get_term_link( $t ) ); ?>"
-							class="rounded-full px-3 py-1.5 text-xs font-bold transition <?php echo $active ? '' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>"
-							<?php echo $active ? 'style="background:' . esc_attr( $c ) . ';color:#fff"' : ''; ?>>
+							class="rounded-full px-3 py-1 text-[11px] font-bold transition <?php echo $active ? 'text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>"
+							<?php echo $active ? 'style="background:' . esc_attr( $c ) . '"' : ''; ?>>
 							<?php echo esc_html( $t->name ); ?>
 						</a>
 					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
 
-			<?php dolat_ad( 'archive_middle' ); ?>
+			<?php
+			// بنر دوم فقط وقتی نواری بالایش هست، وگرنه دو بنر پشت‌سرهم می‌افتند
+			if ( $has_cat_tabs || $dolat_has_tag_bar ) dolat_ad( 'archive_middle' );
+			?>
 
 			<!-- لیست استعلام‌ها -->
 			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">

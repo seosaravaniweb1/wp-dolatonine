@@ -842,6 +842,27 @@ function dolat_render_govsites( $rows = 2 ) {
 ═════════════════════════════════════════════════ */
 
 /** پربازدیدترین استعلام‌ها — کل سایت، یا محدود به یک برچسب (estelam_tag) خاص */
+/**
+ * دسته‌های مادری که واقعا استعلام دارند
+ * برای ساخت تب‌های «استعلام یارانه / استعلام قوه قضاییه / …» در آرشیو استعلام‌ها
+ *
+ * @return array<int,WP_Term>
+ */
+function dolat_get_categories_with_estelam() {
+	$out = array();
+	foreach ( dolat_get_parent_categories() as $cat ) {
+		$q = new WP_Query( array(
+			'post_type'      => 'estelam',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $cat->term_id, 'include_children' => true ) ),
+		) );
+		if ( $q->have_posts() ) $out[] = $cat;
+	}
+	return $out;
+}
+
 function dolat_get_top_estelam_scoped( $term = null, $count = 5 ) {
 	if ( ! $term ) return dolat_get_top_estelam( $count );
 
