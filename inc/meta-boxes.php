@@ -223,43 +223,6 @@ function dolat_get_estelam_steps( $post_id ) {
 
 
 /* ═════════════════════════════════════════════════
-   متاباکس سایت دولتی
-═════════════════════════════════════════════════ */
-add_action( 'add_meta_boxes', function() {
-	add_meta_box( 'dolat_govsite_box', 'اطلاعات سایت دولتی', 'dolat_render_govsite_metabox', 'govsite', 'normal', 'high' );
-} );
-
-function dolat_render_govsite_metabox( $post ) {
-	wp_nonce_field( 'dolat_govsite_save', 'dolat_govsite_nonce' );
-	$url   = get_post_meta( $post->ID, '_dolat_site_url', true );
-	$desc  = get_post_meta( $post->ID, '_dolat_site_desc', true );
-	$emoji = get_post_meta( $post->ID, '_dolat_site_emoji', true );
-	?>
-	<p><label><strong>آدرس سایت</strong></label><br>
-		<input type="url" name="dolat_site_url" value="<?php echo esc_attr( $url ); ?>" style="width:100%;max-width:520px;padding:8px;" placeholder="https://www.example.ir"></p>
-
-	<p><label><strong>توضیح کوتاه (اختیاری)</strong></label><br>
-		<input type="text" name="dolat_site_desc" value="<?php echo esc_attr( $desc ); ?>" style="width:100%;max-width:520px;padding:8px;" placeholder="سامانه خدمات الکترونیک قضایی"></p>
-
-	<p><label><strong>آیکون جایگزین (اموجی)</strong></label><br>
-		<input type="text" name="dolat_site_emoji" value="<?php echo esc_attr( $emoji ); ?>" maxlength="4" style="padding:8px;width:80px;">
-		<span class="description">اگر لوگو آپلود نکنید این آیکون نمایش داده می‌شود.</span></p>
-
-	<p class="description">لوگوی اداره را از باکس «تصویر شاخص» در ستون کناری آپلود کنید. تصویر مربعی با پس‌زمینه شفاف (PNG) بهترین نتیجه را می‌دهد.</p>
-	<?php
-}
-
-add_action( 'save_post_govsite', function( $post_id ) {
-	if ( ! isset( $_POST['dolat_govsite_nonce'] ) || ! wp_verify_nonce( $_POST['dolat_govsite_nonce'], 'dolat_govsite_save' ) ) return;
-	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
-	if ( ! current_user_can( 'edit_post', $post_id ) ) return;
-
-	if ( isset( $_POST['dolat_site_url'] ) )   update_post_meta( $post_id, '_dolat_site_url', esc_url_raw( wp_unslash( $_POST['dolat_site_url'] ) ) );
-	if ( isset( $_POST['dolat_site_desc'] ) )  update_post_meta( $post_id, '_dolat_site_desc', sanitize_text_field( wp_unslash( $_POST['dolat_site_desc'] ) ) );
-	if ( isset( $_POST['dolat_site_emoji'] ) ) update_post_meta( $post_id, '_dolat_site_emoji', sanitize_text_field( wp_unslash( $_POST['dolat_site_emoji'] ) ) );
-} );
-
-/* ═════════════════════════════════════════════════
    متاباکس «استعلام مرتبط» برای نوشته‌های عادی
    وقتی تعیین شود، دکمه کارت نوشته در صفحه دسته به‌جای
    «ادامه مطلب» به «استعلام مرتبط» با لینک همان استعلام تغییر می‌کند.

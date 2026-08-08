@@ -802,36 +802,17 @@ function dolat_get_top_estelam( $count = 6 ) {
 /**
  * تابلو اعلانات سازمان‌های دولتی
  * دو ردیف منظم و هم‌تراز، با حرکت آرام در جهت مخالف هم.
- * داده از صفحه «سازمان‌های دولتی» خوانده می‌شود؛ اگر خالی بود، از پست‌تایپ قدیمی govsite.
+ * تنها منبع داده: صفحه مدیریت «سازمان‌های دولتی» (inc/govsites.php)
  */
 function dolat_render_govsites( $rows = 2 ) {
 	$items = array();
 
-	// ۱) لیست جدید (صفحه مدیریت سازمان‌های دولتی)
 	foreach ( dolat_get_govsites() as $r ) {
-		$items[] = array(
-			'title' => isset( $r['title'] ) ? $r['title'] : '',
-			'url'   => isset( $r['url'] ) ? $r['url'] : '',
-			'logo'  => ! empty( $r['logo'] ) ? wp_get_attachment_image_url( (int) $r['logo'], 'medium' ) : '',
-		);
-	}
-
-	// ۲) سازگاری با داده‌های قبلی پست‌تایپ govsite
-	if ( ! $items ) {
-		$sites = get_posts( array(
-			'post_type'      => 'govsite',
-			'posts_per_page' => -1,
-			'orderby'        => 'menu_order title',
-			'order'          => 'ASC',
-			'no_found_rows'  => true,
-		) );
-		foreach ( $sites as $site ) {
-			$items[] = array(
-				'title' => $site->post_title,
-				'url'   => get_post_meta( $site->ID, '_dolat_site_url', true ),
-				'logo'  => has_post_thumbnail( $site->ID ) ? get_the_post_thumbnail_url( $site->ID, 'medium' ) : '',
-			);
-		}
+		$title = isset( $r['title'] ) ? $r['title'] : '';
+		$url   = isset( $r['url'] ) ? $r['url'] : '';
+		$logo  = ! empty( $r['logo'] ) ? wp_get_attachment_image_url( (int) $r['logo'], 'medium' ) : '';
+		if ( '' === $title && '' === $url && ! $logo ) continue;
+		$items[] = array( 'title' => $title, 'url' => $url, 'logo' => $logo );
 	}
 
 	if ( ! $items ) return '';

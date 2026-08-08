@@ -433,32 +433,7 @@ function dolat_save_estelam_categories( $post_id ) {
 }
 add_action( 'save_post_estelam', 'dolat_save_estelam_categories' );
 
-
-/* ─────────────────────────────
-   CPT: سایت‌های دولتی
-───────────────────────────── */
-function dolat_register_govsite_cpt() {
-	register_post_type( 'govsite', array(
-		'labels' => array(
-			'name'          => 'سایت‌های دولتی',
-			'singular_name' => 'سایت دولتی',
-			'add_new'       => 'افزودن سایت',
-			'add_new_item'  => 'افزودن سایت دولتی',
-			'edit_item'     => 'ویرایش سایت دولتی',
-			'all_items'     => 'همه سایت‌ها',
-			'menu_name'     => 'سایت‌های دولتی',
-			'not_found'     => 'سایتی ثبت نشده است',
-		),
-		'public'             => false,
-		'publicly_queryable' => false,
-		'show_ui'            => true,
-		'show_in_menu'       => true,
-		'menu_icon'          => 'dashicons-admin-site-alt3',
-		'menu_position'      => 6,
-		'has_archive'        => false,
-		'rewrite'            => false,
-		'supports'           => array( 'title', 'thumbnail' ),
-		'show_in_rest'       => false,
-	) );
-}
-add_action( 'init', 'dolat_register_govsite_cpt' );
+/*
+ * پست‌تایپ «سایت‌های دولتی» (govsite) حذف شد.
+ * مدیریت سازمان‌ها فقط از صفحه «سازمان‌های دولتی» انجام می‌شود: inc/govsites.php
+ */

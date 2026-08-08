@@ -13,6 +13,41 @@ function dolat_get_govsites() {
 	return is_array( $rows ) ? $rows : array();
 }
 
+/**
+ * انتقال یک‌باره داده‌های پست‌تایپ قدیمی «سایت‌های دولتی» (govsite) به لیست جدید.
+ * پست‌تایپ حذف شده است، پس مستقیم از جدول پست‌ها می‌خوانیم تا به ثبت‌شدن آن وابسته نباشیم.
+ * پست‌های قدیمی پاک نمی‌شوند؛ فقط دیگر در پیشخوان نمایش داده نمی‌شوند.
+ */
+function dolat_migrate_govsite_cpt() {
+	if ( get_option( 'dolat_govsites_migrated' ) ) return;
+
+	// اگر لیست جدید از قبل پر است، فقط پرچم را می‌زنیم تا داده‌ها بازنویسی نشود.
+	if ( dolat_get_govsites() ) {
+		update_option( 'dolat_govsites_migrated', 1 );
+		return;
+	}
+
+	global $wpdb;
+	$posts = $wpdb->get_results(
+		"SELECT ID, post_title FROM {$wpdb->posts}
+		 WHERE post_type = 'govsite' AND post_status IN ( 'publish', 'draft', 'pending', 'private' )
+		 ORDER BY menu_order ASC, post_title ASC"
+	);
+
+	$clean = array();
+	foreach ( $posts as $p ) {
+		$title = trim( (string) $p->post_title );
+		$url   = (string) get_post_meta( $p->ID, '_dolat_site_url', true );
+		$logo  = (int) get_post_thumbnail_id( $p->ID );
+		if ( '' === $title && '' === $url && ! $logo ) continue;
+		$clean[] = array( 'title' => $title, 'url' => $url, 'logo' => $logo );
+	}
+
+	if ( $clean ) update_option( 'dolat_govsites', $clean );
+	update_option( 'dolat_govsites_migrated', 1 );
+}
+add_action( 'admin_init', 'dolat_migrate_govsite_cpt' );
+
 /* ── صفحه مدیریت ── */
 add_action( 'admin_menu', function() {
 	add_menu_page(
