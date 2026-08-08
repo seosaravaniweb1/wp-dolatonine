@@ -680,6 +680,47 @@ function dolat_render_megamenu_column( $parent_term, $type ) {
 }
 
 /** ساختار کامل مگامنو: سایدبار دسته‌های مادر + ۳ ستون داینامیک */
+/**
+ * نسخه موبایل «دسته‌بندی خدمات» برای منوی کشویی
+ * هر دسته مادر یک بخش تاشو است که فقط زیردسته‌ها + لینک استعلام‌های همان بخش را
+ * نشان می‌دهد (نه لیست مطالب)، تا منو سبک و قابل استفاده بماند.
+ */
+function dolat_render_mobile_categories() {
+	$parents = dolat_get_parent_categories();
+	if ( empty( $parents ) ) return '';
+
+	ob_start();
+	?>
+	<div id="dDrawerCats" class="space-y-1">
+		<?php foreach ( $parents as $cat ) :
+			$icon     = dolat_category_icon( $cat ) ?: '📁';
+			$color    = dolat_category_color( $cat );
+			$children = get_terms( array( 'taxonomy' => 'category', 'parent' => $cat->term_id, 'hide_empty' => false ) );
+			$children = ( $children && ! is_wp_error( $children ) ) ? $children : array();
+		?>
+			<div class="overflow-hidden rounded-lg border border-slate-100 dark:border-slate-700">
+				<button type="button" class="d-drawer-cat flex w-full items-center gap-2 px-3 py-2.5 text-right text-sm font-bold text-slate-700 dark:text-slate-200" aria-expanded="false">
+					<span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $icon ); ?></span>
+					<span class="flex-1"><?php echo esc_html( $cat->name ); ?></span>
+					<span class="d-drawer-caret shrink-0 text-slate-400 transition-transform">▾</span>
+				</button>
+
+				<div class="d-drawer-sub hidden border-t border-slate-100 bg-slate-50/60 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40">
+					<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] font-semibold text-dnavy dark:text-dgold">همه مطالب <?php echo esc_html( $cat->name ); ?></a>
+					<?php foreach ( $children as $ch ) : ?>
+						<a href="<?php echo esc_url( get_term_link( $ch ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] text-slate-600 hover:text-dgold dark:text-slate-300"><?php echo esc_html( $ch->name ); ?></a>
+					<?php endforeach; ?>
+					<a href="<?php echo esc_url( dolat_estelam_archive_link_for_cat( $cat->term_id ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] text-slate-600 hover:text-dgold dark:text-slate-300">📋 استعلام <?php echo esc_html( $cat->name ); ?></a>
+				</div>
+			</div>
+		<?php endforeach; ?>
+
+		<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="block rounded-lg bg-dnavy px-3 py-2.5 text-sm font-bold text-white">📋 همه استعلام‌ها</a>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
 function dolat_render_megamenu() {
 	$parents = dolat_get_parent_categories();
 	if ( empty( $parents ) ) return '';

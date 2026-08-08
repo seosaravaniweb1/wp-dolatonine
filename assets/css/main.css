@@ -37,6 +37,7 @@
   --d-cat-color:#1d5c7a;
 }
 
+html.dark,
 body.theme-dark{
   --d-navy:#0c1c26;
   --d-navy-2:#08141c;
@@ -143,6 +144,7 @@ html{ scroll-behavior:smooth; }
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
           mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
 }
+html.dark .d-govboard,
 body.theme-dark .d-govboard{
   background:linear-gradient(160deg, rgba(148,163,184,.14), rgba(51,65,85,.20));
   border-color:rgba(148,163,184,.20);
@@ -166,7 +168,9 @@ body.theme-dark .d-govboard{
   transition:background .18s, border-color .18s, transform .18s;
 }
 .d-govitem:hover{ background:#fff; border-color:var(--d-gold); transform:translateY(-2px); }
+html.dark .d-govitem,
 body.theme-dark .d-govitem{ background:rgba(30,41,59,.65); border-color:rgba(148,163,184,.25); }
+html.dark .d-govitem:hover,
 body.theme-dark .d-govitem:hover{ background:rgba(30,41,59,.9); border-color:var(--d-gold); }
 .d-govitem-logo{
   width:34px; height:34px; flex-shrink:0; background:#fff; border-radius:8px;
@@ -176,5 +180,6 @@ body.theme-dark .d-govitem:hover{ background:rgba(30,41,59,.9); border-color:var
 .d-govitem-logo img{ width:100%; height:100%; object-fit:contain; padding:3px; }
 .d-govitem-emoji{ font-size:18px; }
 .d-govitem-name{ font-size:12.5px; font-weight:800; color:var(--d-text-heading); white-space:nowrap; }
+html.dark .d-govitem-name,
 body.theme-dark .d-govitem-name{ color:#e2e8f0; }
 @media(prefers-reduced-motion:reduce){ .d-govtrack{ animation:none !important; } }

@@ -23,8 +23,13 @@
 
 	/* ---------- منوی کشویی ---------- */
 	function initDrawer() {
-		var openBtn = $('#dMenuBtn'), closeBtn = $('#dDrawerClose'), overlay = $('#dDrawerOverlay'), panel = $('#dDrawerPanel');
-		if (!openBtn || !panel) return;
+		var closeBtn = $('#dDrawerClose'), overlay = $('#dDrawerOverlay'), panel = $('#dDrawerPanel');
+		if (!panel) return;
+
+		// هر دو دکمه (آیکون همبرگری بالا و دکمه «دسته‌بندی و منو») همین منوی جامع را باز می‌کنند
+		var openBtns = [$('#dMenuBtn'), $('#dNavMenuBtn')].filter(Boolean);
+		if (!openBtns.length) return;
+
 		function open() {
 			overlay.classList.remove('hidden');
 			panel.classList.remove('translate-x-full');
@@ -35,9 +40,21 @@
 			panel.classList.add('translate-x-full');
 			document.body.style.overflow = '';
 		}
-		openBtn.addEventListener('click', open);
+		openBtns.forEach(function (b) { b.addEventListener('click', open); });
 		if (closeBtn) closeBtn.addEventListener('click', close);
 		if (overlay) overlay.addEventListener('click', close);
+
+		// بخش‌های تاشوی دسته‌بندی داخل منو
+		$$('.d-drawer-cat', panel).forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var sub = btn.nextElementSibling;
+				var caret = $('.d-drawer-caret', btn);
+				if (!sub) return;
+				var open = sub.classList.toggle('hidden') === false;
+				btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+				if (caret) caret.classList.toggle('-rotate-90', !open);
+			});
+		});
 	}
 
 	/* ---------- پنل جستجوی هدر ---------- */

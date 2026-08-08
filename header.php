@@ -86,9 +86,6 @@ $dolat_phone         = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_
 				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M4 5c0 8.284 6.716 15 15 15l2-4-5-2-2 2c-2.5-1-4.5-3-5.5-5.5l2-2-2-5-4-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
 			</a>
 
-			<button type="button" id="dMenuBtn" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-dnavy dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-dgold md:hidden" aria-label="منو">
-				<svg class="h-[20px] w-[20px]" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</button>
 		</div>
 	</div>
 </div>
@@ -99,8 +96,8 @@ $dolat_phone         = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_
 <header class="sticky top-0 z-40 border-b border-slate-200 bg-dnavy shadow-sm dark:border-slate-800">
 	<nav class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2.5">
 
-		<!-- تریگر مگامنو -->
-		<div class="relative shrink-0" id="dMegaWrap">
+		<!-- تریگر مگامنو (فقط دسکتاپ؛ در موبایل داخل منوی کشویی است) -->
+		<div class="relative hidden shrink-0 md:block" id="dMegaWrap">
 			<button type="button" id="dMegaTrigger" class="flex items-center gap-2 rounded-lg bg-dgold px-4 py-2 text-sm font-bold text-white shadow transition hover:brightness-105" aria-haspopup="true" aria-expanded="false" aria-controls="dMegaPanelWrap">
 				<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M4 6h7v7H4V6Zm9 0h7v7h-7V6ZM4 15h7v3H4v-3Zm9 0h7v3h-7v-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
 				<span>دسته‌بندی خدمات</span>
@@ -113,8 +110,14 @@ $dolat_phone         = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_
 			</div>
 		</div>
 
-		<!-- منوی هدر وردپرس (نمایش ← فهرست‌ها ← جایگاه «منوی اصلی هدر») -->
-		<div class="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+		<!-- عنوان نوار در موبایل: یک دکمه که همان منوی جامع را باز می‌کند -->
+		<button type="button" id="dNavMenuBtn" class="flex items-center gap-2 rounded-lg bg-dgold px-4 py-2 text-sm font-bold text-white shadow md:hidden" aria-label="منو">
+			<svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+			<span>دسته‌بندی و منو</span>
+		</button>
+
+		<!-- منوی هدر وردپرس — فقط دسکتاپ (نمایش ← فهرست‌ها ← «منوی اصلی هدر») -->
+		<div class="hidden min-w-0 flex-1 overflow-x-auto md:block [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 			<?php
 			wp_nav_menu( array(
 				'theme_location' => 'primary',
@@ -135,19 +138,30 @@ $dolat_phone         = dolat_footer_opt( 'phone', get_theme_mod( 'dolat_contact_
 <div id="dDrawer">
 	<div class="fixed inset-0 z-50 hidden bg-black/50" id="dDrawerOverlay"></div>
 	<nav class="fixed inset-y-0 right-0 z-50 w-[82%] max-w-xs translate-x-full overflow-y-auto bg-white p-4 shadow-2xl transition-transform duration-200 dark:bg-slate-900" id="dDrawerPanel">
-		<button type="button" class="mb-3 flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" id="dDrawerClose" aria-label="بستن منو">✕</button>
-		<?php
-		// اگر منوی موبایل تعیین نشده باشد، از منوی اصلی هدر استفاده می‌کند؛
-		// اگر آن هم نبود، دسته‌های مادر را خودکار نشان می‌دهد.
-		wp_nav_menu( array(
-			'theme_location' => has_nav_menu( 'mobile' ) ? 'mobile' : 'primary',
-			'container'      => false,
-			'items_wrap'     => '<ul class="space-y-1 text-sm">%3$s</ul>',
-			'link_before'    => '<span class="block rounded-lg px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">',
-			'link_after'     => '</span>',
-			'fallback_cb'    => 'dolat_default_menu',
-		) );
-		?>
+		<div class="mb-4 flex items-center justify-between">
+			<span class="text-sm font-extrabold text-dnavy dark:text-white">منو</span>
+			<button type="button" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" id="dDrawerClose" aria-label="بستن منو">✕</button>
+		</div>
+
+		<!-- ۱) دسته‌بندی خدمات (تاشو، فقط زیردسته‌ها) -->
+		<div class="mb-2 px-1 text-[11px] font-bold tracking-wide text-slate-400">دسته‌بندی خدمات</div>
+		<?php echo dolat_render_mobile_categories(); ?>
+
+		<!-- ۲) منوی هدر -->
+		<?php if ( has_nav_menu( 'mobile' ) || has_nav_menu( 'primary' ) ) : ?>
+			<div class="mb-2 mt-5 border-t border-slate-100 px-1 pt-4 text-[11px] font-bold tracking-wide text-slate-400 dark:border-slate-700">منوی سایت</div>
+			<?php
+			wp_nav_menu( array(
+				'theme_location' => has_nav_menu( 'mobile' ) ? 'mobile' : 'primary',
+				'container'      => false,
+				'items_wrap'     => '<ul class="space-y-1 text-sm">%3$s</ul>',
+				'depth'          => 1,
+				'link_before'    => '<span class="block rounded-lg px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">',
+				'link_after'     => '</span>',
+				'fallback_cb'    => false,
+			) );
+			?>
+		<?php endif; ?>
 	</nav>
 </div>
 
