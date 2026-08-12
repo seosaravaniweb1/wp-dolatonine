@@ -37,6 +37,7 @@ add_action( 'after_setup_theme', 'dolat_theme_setup' );
    بارگذاری فایل‌های داخلی
 ───────────────────────────── */
 require_once DOLAT_THEME_DIR . '/inc/cpt-taxonomies.php';
+require_once DOLAT_THEME_DIR . '/inc/estelam-taxonomy.php';
 require_once DOLAT_THEME_DIR . '/inc/meta-boxes.php';
 require_once DOLAT_THEME_DIR . '/inc/enqueue.php';
 require_once DOLAT_THEME_DIR . '/inc/ajax-handlers.php';

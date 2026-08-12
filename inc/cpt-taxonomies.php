@@ -84,20 +84,39 @@ add_action( 'after_switch_theme', function() {
 ───────────────────────────── */
 add_action( 'init', function() {
 	add_rewrite_rule( '^estelam-bookmarks/?$', 'index.php?dolat_bookmarks=1', 'top' );
+
+	// زیردسته استعلام هر دسته مادر: /estelam/cat/<نامک-دسته>/
+	// پیشوند cat جلوی برخورد با آدرس تک‌استعلام (/estelam/<نامک-استعلام>/) را می‌گیرد.
+	add_rewrite_rule( '^estelam/cat/([^/]+)/page/([0-9]{1,})/?$', 'index.php?post_type=estelam&dolat_cat_slug=$matches[1]&paged=$matches[2]', 'top' );
+	add_rewrite_rule( '^estelam/cat/([^/]+)/?$', 'index.php?post_type=estelam&dolat_cat_slug=$matches[1]', 'top' );
 } );
 
 add_filter( 'query_vars', function( $vars ) {
 	$vars[] = 'dolat_bookmarks';
-	$vars[] = 'dolat_cat'; // فیلتر آرشیو استعلام‌ها بر اساس دسته مادر
+	$vars[] = 'dolat_cat';      // فیلتر آرشیو استعلام‌ها بر اساس شناسه دسته مادر
+	$vars[] = 'dolat_cat_slug'; // همان فیلتر، اما از آدرس تمیز /estelam/cat/<نامک>/
 	return $vars;
 } );
 
 /* ─────────────────────────────
    فیلتر آرشیو استعلام‌ها بر اساس دسته مادر
-   آدرس: /estelam/?dolat_cat=<شناسه دسته>
-   این همان چیزی است که لینک «مشاهده همه» ستون استعلام‌ها در مگامنو به آن اشاره می‌کند،
+   آدرس اصلی : /estelam/cat/<نامک-دسته>/
+   آدرس معادل: /estelam/?dolat_cat=<شناسه دسته>
+   این همان لیستی است که لینک «مشاهده همه» ستون استعلام‌ها در مگامنو به آن اشاره می‌کند،
    تا به‌جای آرشیو دسته (که نوشته‌ها را نشان می‌دهد) لیست واقعی استعلام‌های همان بخش بیاید.
 ───────────────────────────── */
+
+/* نامک را به شناسه تبدیل می‌کند تا بقیه قالب فقط با dolat_cat کار کند */
+add_action( 'pre_get_posts', function( $query ) {
+	if ( is_admin() || ! $query->is_main_query() ) return;
+
+	$slug = $query->get( 'dolat_cat_slug' );
+	if ( ! $slug || $query->get( 'dolat_cat' ) ) return;
+
+	$term = get_term_by( 'slug', sanitize_title( $slug ), 'category' );
+	if ( $term && ! is_wp_error( $term ) ) $query->set( 'dolat_cat', (int) $term->term_id );
+}, 4 );
+
 add_action( 'pre_get_posts', function( $query ) {
 	if ( is_admin() || ! $query->is_main_query() ) return;
 	if ( ! $query->is_post_type_archive( 'estelam' ) ) return;
@@ -117,7 +136,14 @@ add_action( 'pre_get_posts', function( $query ) {
 
 /** آدرس لیست استعلام‌های یک دسته مادر */
 function dolat_estelam_archive_link_for_cat( $term_id ) {
-	return add_query_arg( 'dolat_cat', (int) $term_id, get_post_type_archive_link( 'estelam' ) );
+	$base = get_post_type_archive_link( 'estelam' );
+	if ( ! $base ) return home_url( '/' );
+
+	$term = get_term( (int) $term_id, 'category' );
+	if ( get_option( 'permalink_structure' ) && $term && ! is_wp_error( $term ) ) {
+		return trailingslashit( $base ) . 'cat/' . $term->slug . '/';
+	}
+	return add_query_arg( 'dolat_cat', (int) $term_id, $base );
 }
 
 add_filter( 'template_include', function( $template ) {
@@ -133,9 +159,9 @@ add_filter( 'template_include', function( $template ) {
  * چون قالب از قبل فعال بوده، فقط after_switch_theme کافی نیست.
  */
 add_action( 'init', function() {
-	if ( '3' !== get_option( 'dolat_rewrite_version' ) ) {
+	if ( '4' !== get_option( 'dolat_rewrite_version' ) ) {
 		flush_rewrite_rules();
-		update_option( 'dolat_rewrite_version', '3' );
+		update_option( 'dolat_rewrite_version', '4' );
 	}
 }, 20 );
 
@@ -385,53 +411,10 @@ add_filter( 'manage_category_custom_column', function( $out, $col, $term_id ) {
 	return isset( $labels[ $role ] ) ? $labels[ $role ] : '<span style="color:#c00">تعیین نشده</span>';
 }, 10, 3 );
 
-/* ═════════════════════════════════════════════════
-   باکس انتخاب دسته مادر برای استعلام‌ها
-   (به‌جای باکس استاندارد دسته‌ها که همه سطوح را نشان می‌دهد)
-═════════════════════════════════════════════════ */
-add_action( 'add_meta_boxes', function() {
-	remove_meta_box( 'categorydiv', 'estelam', 'side' );
-	add_meta_box(
-		'dolat_estelam_parent_cat',
-		'دسته استعلام',
-		'dolat_render_estelam_cat_box',
-		'estelam',
-		'side',
-		'high'
-	);
-}, 20 );
-
-function dolat_render_estelam_cat_box( $post ) {
-	wp_nonce_field( 'dolat_estelam_cat_save', 'dolat_estelam_cat_nonce' );
-	$parents  = get_terms( array( 'taxonomy' => 'category', 'parent' => 0, 'hide_empty' => false ) );
-	$selected = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'ids' ) );
-
-	if ( is_wp_error( $parents ) || empty( $parents ) ) {
-		echo '<p>هنوز هیچ دسته‌ای نساخته‌اید. از «نوشته‌ها ← دسته‌ها» دسته مادر بسازید.</p>';
-		return;
-	}
-	echo '<p style="margin-top:0;color:#666;">این استعلام در لیست کدام بخش بیاید؟ مثلا با انتخاب «یارانه» در لیست <strong>استعلام یارانه</strong> و در مگامنو و صفحه اصلی همان بخش نمایش داده می‌شود.</p>';
-	echo '<ul style="max-height:260px;overflow:auto;margin:0;">';
-	foreach ( $parents as $t ) {
-		printf(
-			'<li style="margin-bottom:6px;"><label><input type="checkbox" name="dolat_estelam_cats[]" value="%d" %s> %s</label></li>',
-			(int) $t->term_id,
-			checked( in_array( $t->term_id, $selected, true ), true, false ),
-			esc_html( $t->name )
-		);
-	}
-	echo '</ul>';
-}
-
-function dolat_save_estelam_categories( $post_id ) {
-	if ( ! isset( $_POST['dolat_estelam_cat_nonce'] ) || ! wp_verify_nonce( $_POST['dolat_estelam_cat_nonce'], 'dolat_estelam_cat_save' ) ) return;
-	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
-	if ( ! current_user_can( 'edit_post', $post_id ) ) return;
-
-	$cats = isset( $_POST['dolat_estelam_cats'] ) ? array_map( 'absint', (array) $_POST['dolat_estelam_cats'] ) : array();
-	wp_set_post_terms( $post_id, $cats, 'category', false );
-}
-add_action( 'save_post_estelam', 'dolat_save_estelam_categories' );
+/*
+ * انتخاب دسته استعلام، جداسازی کوئری‌ها و ستون‌های پیشخوان
+ * به فایل اختصاصی منتقل شد: inc/estelam-taxonomy.php
+ */
 
 /*
  * پست‌تایپ «سایت‌های دولتی» (govsite) حذف شد.

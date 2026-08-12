@@ -146,7 +146,7 @@ $govsites     = dolat_render_govsites( 2 );   // تابلوی سازمان‌ه�
 				<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>" class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-100 bg-white p-4 text-center transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
 					<span class="flex h-10 w-10 items-center justify-center rounded-lg text-lg" style="background:<?php echo esc_attr( $color ); ?>1a;color:<?php echo esc_attr( $color ); ?>"><?php echo esc_html( $icon ); ?></span>
 					<span class="text-sm font-bold text-slate-700 dark:text-slate-200"><?php echo esc_html( $cat->name ); ?></span>
-					<span class="text-[11px] text-slate-400"><?php echo esc_html( number_format_i18n( $cat->count ) ); ?> مطلب</span>
+					<span class="text-[11px] text-slate-400"><?php echo esc_html( number_format_i18n( dolat_count_section_items( $cat->term_id ) ) ); ?> مطلب</span>
 				</a>
 			<?php endforeach; ?>
 		</div>
