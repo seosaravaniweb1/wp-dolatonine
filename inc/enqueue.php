@@ -25,7 +25,7 @@ add_action( 'wp_enqueue_scripts', 'dolat_enqueue_assets' );
 
 function dolat_admin_assets( $hook ) {
 	global $post_type;
-	if ( 'estelam' === $post_type ) {
+	if ( 'post' === $post_type ) {
 		wp_enqueue_style( 'dolat-admin', DOLAT_THEME_URI . '/assets/css/admin.css', array(), DOLAT_THEME_VERSION );
 	}
 }

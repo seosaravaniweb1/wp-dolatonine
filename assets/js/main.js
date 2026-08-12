@@ -258,7 +258,7 @@
 		bindLiveSearch(input, results);
 	}
 
-	/* ---------- جستجوی Ajax مخصوص آرشیو استعلام‌ها (فقط پست‌تایپ estelam) ---------- */
+	/* ---------- جستجوی Ajax مخصوص لیستینگ استعلام‌ها (فقط استعلام‌ها) ---------- */
 	function initEstelamArchiveSearch() {
 		var input = $('#dEstelamSearchInput'), results = $('#dEstelamSearchResults');
 		if (!input) return;

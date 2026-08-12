@@ -9,7 +9,7 @@ get_header();
 
 	<div class="grid grid-cols-1 gap-4">
 		<?php if ( have_posts() ) : while ( have_posts() ) : the_post();
-			echo 'estelam' === get_post_type() ? dolat_render_estelam_card( get_the_ID() ) : dolat_render_post_card( get_the_ID() );
+			echo dolat_is_estelam( get_the_ID() ) ? dolat_render_estelam_card( get_the_ID() ) : dolat_render_post_card( get_the_ID() );
 		endwhile; else : ?>
 			<div class="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">نتیجه‌ای یافت نشد.</div>
 		<?php endif; ?>

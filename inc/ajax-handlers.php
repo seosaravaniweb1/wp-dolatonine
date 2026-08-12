@@ -6,7 +6,7 @@ function dolat_ajax_get_estelam() {
 	check_ajax_referer( 'dolat_nonce', 'nonce' );
 
 	$id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
-	if ( ! $id || 'estelam' !== get_post_type( $id ) ) {
+	if ( ! $id || ! dolat_is_estelam( $id ) ) {
 		wp_send_json_error( 'استعلام یافت نشد' );
 	}
 	wp_send_json_success( dolat_get_estelam_payload( $id ) );
@@ -27,7 +27,7 @@ function dolat_ajax_feedback() {
 	$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
 	$desc   = isset( $_POST['desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['desc'] ) ) : '';
 
-	if ( ! $id || 'estelam' !== get_post_type( $id ) || ! in_array( $status, array( 'works', 'broken' ), true ) ) {
+	if ( ! $id || ! dolat_is_estelam( $id ) || ! in_array( $status, array( 'works', 'broken' ), true ) ) {
 		wp_send_json_error( 'درخواست نامعتبر' );
 	}
 
@@ -63,14 +63,16 @@ function dolat_ajax_search() {
 	$scope = isset( $_POST['scope'] ) ? sanitize_key( wp_unslash( $_POST['scope'] ) ) : 'all';
 	if ( mb_strlen( $term ) < 2 ) wp_send_json_success( array( 'html' => '' ) );
 
-	$post_types = 'estelam' === $scope ? array( 'estelam' ) : array( 'post', 'estelam' );
-
-	$q = new WP_Query( array(
+	$args = array(
 		's'              => $term,
-		'post_type'      => $post_types,
+		'post_type'      => 'post',
 		'posts_per_page' => 8,
 		'no_found_rows'  => true,
-	) );
+	);
+	// جستجوی هدر آرشیو استعلام‌ها فقط استعلام برمی‌گرداند
+	if ( 'estelam' === $scope ) $args = dolat_estelam_args( $args );
+
+	$q = new WP_Query( $args );
 
 	if ( ! $q->have_posts() ) {
 		wp_send_json_success( array( 'html' => '<div class="p-4 text-center text-xs text-slate-400">نتیجه‌ای یافت نشد.</div>' ) );
@@ -79,7 +81,7 @@ function dolat_ajax_search() {
 	$row_cls = 'flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 text-sm text-slate-700 last:border-0 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
 	$html    = '';
 	foreach ( $q->posts as $p ) {
-		$is_estelam = 'estelam' === $p->post_type;
+		$is_estelam = dolat_is_estelam( $p->ID );
 		$icon = $is_estelam ? ( get_post_meta( $p->ID, '_dolat_icon', true ) ?: '📋' ) : '📰';
 		$url  = $is_estelam ? '#' : get_permalink( $p->ID );
 		$attr = $is_estelam ? ' data-estelam-id="' . esc_attr( $p->ID ) . '"' : '';
@@ -110,7 +112,7 @@ function dolat_ajax_cat_posts() {
 
 	$html = '';
 	foreach ( $q->posts as $i => $p ) {
-		$html .= dolat_render_category_post_card( $p->ID );
+		$html .= dolat_is_estelam( $p->ID ) ? dolat_render_estelam_row_card( $p->ID ) : dolat_render_category_post_card( $p->ID );
 		if ( 0 === ( $i + 1 ) % 4 ) $html .= dolat_ad( 'archive_middle', false );
 	}
 	wp_send_json_success( array( 'html' => $html ) );
@@ -126,13 +128,12 @@ function dolat_ajax_get_bookmarks() {
 	$ids = array_filter( array_map( 'absint', explode( ',', $raw ) ) );
 	if ( ! $ids ) wp_send_json_success( array( 'html' => '' ) );
 
-	$q = new WP_Query( array(
-		'post_type'      => 'estelam',
+	$q = new WP_Query( dolat_estelam_args( array(
 		'post__in'       => $ids,
 		'orderby'        => 'post__in',
 		'posts_per_page' => 50,
 		'no_found_rows'  => true,
-	) );
+	) ) );
 
 	$html = '';
 	foreach ( $q->posts as $p ) $html .= dolat_render_estelam_row_card( $p->ID );

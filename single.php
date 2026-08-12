@@ -55,12 +55,12 @@ while ( have_posts() ) : the_post();
 		<?php
 		/* استعلام‌های مرتبط: از همان دسته مادر */
 		if ( $root ) :
-			$related_estelam = get_posts( array(
-				'post_type'      => 'estelam',
+			$related_estelam = get_posts( dolat_estelam_args( array(
 				'posts_per_page' => 3,
 				'no_found_rows'  => true,
+				'post__not_in'   => array( $post_id ),
 				'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $root->term_id, 'include_children' => true ) ),
-			) );
+			) ) );
 			if ( $related_estelam ) : ?>
 			<div class="mt-8 border-t border-slate-100 pt-6 dark:border-slate-700">
 				<h2 class="mb-3 text-sm font-extrabold text-slate-700 dark:text-slate-200">استعلام‌های مرتبط</h2>

@@ -37,7 +37,7 @@ add_action( 'after_setup_theme', 'dolat_theme_setup' );
    بارگذاری فایل‌های داخلی
 ───────────────────────────── */
 require_once DOLAT_THEME_DIR . '/inc/cpt-taxonomies.php';
-require_once DOLAT_THEME_DIR . '/inc/estelam-taxonomy.php';
+require_once DOLAT_THEME_DIR . '/inc/estelam.php';
 require_once DOLAT_THEME_DIR . '/inc/meta-boxes.php';
 require_once DOLAT_THEME_DIR . '/inc/enqueue.php';
 require_once DOLAT_THEME_DIR . '/inc/ajax-handlers.php';
@@ -144,30 +144,7 @@ function dolat_track_views( $post_id ) {
 	update_post_meta( $post_id, $count_key, $count );
 }
 add_action( 'wp_head', function() {
-	if ( is_singular( array( 'post', 'estelam' ) ) ) {
+	if ( is_singular( 'post' ) ) {
 		dolat_track_views( get_the_ID() );
 	}
 } );
-
-/* ─────────────────────────────
-   شامل کردن استعلام‌ها در نتایج جستجوی سایت
-───────────────────────────── */
-add_action( 'pre_get_posts', function( $query ) {
-	if ( is_admin() || ! $query->is_main_query() ) return;
-	if ( $query->is_search() ) {
-		$query->set( 'post_type', array( 'post', 'estelam' ) );
-	}
-} );
-
-/* ─────────────────────────────
-   شمارش بازدید فقط برای بازدیدکننده عادی
-───────────────────────────── */
-/* ─────────────────────────────
-   محدود کردن ادیتور کلاسیک / غیرفعال کردن گوتنبرگ برای CPT استعلام (اختیاری، فرم اختصاصی داریم)
-───────────────────────────── */
-add_filter( 'use_block_editor_for_post_type', function( $use_block_editor, $post_type ) {
-	if ( 'estelam' === $post_type ) {
-		return false;
-	}
-	return $use_block_editor;
-}, 10, 2 );

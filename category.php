@@ -87,7 +87,7 @@ $rank_posts    = dolat_get_popular_in_category( $category->term_id, 'post', 5 );
 					$i = 0;
 					while ( have_posts() ) : the_post();
 						$i++;
-						echo dolat_render_category_post_card( get_the_ID() );
+						echo dolat_is_estelam( get_the_ID() ) ? dolat_render_estelam_row_card( get_the_ID() ) : dolat_render_category_post_card( get_the_ID() );
 						if ( 0 === $i % 4 ) echo dolat_ad( 'archive_middle', false );
 					endwhile;
 				else : ?>

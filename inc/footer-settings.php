@@ -281,7 +281,7 @@ function dolat_render_footer_page() {
 /** نوشته‌های جدید یا پربازدید برای فوتر */
 function dolat_footer_posts( $mode = 'new', $count = 3 ) {
 	$args = array(
-		'post_type'      => array( 'post', 'estelam' ),
+		'post_type'      => 'post',
 		'posts_per_page' => $count,
 		'no_found_rows'  => true,
 	);
@@ -301,7 +301,7 @@ function dolat_footer_posts( $mode = 'new', $count = 3 ) {
 
 /** ردیف نوشته در فوتر (تصویر کوچک + عنوان + تاریخ) */
 function dolat_render_footer_post( $post_id ) {
-	$is_estelam = 'estelam' === get_post_type( $post_id );
+	$is_estelam = dolat_is_estelam( $post_id );
 	$thumb      = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'thumbnail' ) : '';
 	$icon       = $is_estelam ? ( get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋' ) : '📰';
 	ob_start();

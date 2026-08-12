@@ -1,6 +1,7 @@
 <?php
 /**
- * باکس‌های متا برای پست‌تایپ استعلام
+ * باکس‌های متای استعلام — روی نوشته‌ها
+ * فقط وقتی معنا دارند که تیک «این محتوا یک استعلام است» زده شده باشد.
  * بدون وابستگی به ACF - کاملا بومی
  */
 
@@ -11,7 +12,7 @@ function dolat_add_estelam_metaboxes() {
 		'dolat_estelam_details',
 		'جزئیات استعلام',
 		'dolat_render_estelam_metabox',
-		'estelam',
+		'post',
 		'normal',
 		'high'
 	);
@@ -19,7 +20,7 @@ function dolat_add_estelam_metaboxes() {
 		'dolat_estelam_feedback',
 		'بازخورد کاربران (فقط نمایش)',
 		'dolat_render_estelam_feedback_metabox',
-		'estelam',
+		'post',
 		'side',
 		'default'
 	);
@@ -126,7 +127,7 @@ function dolat_render_estelam_metabox( $post ) {
 		<div class="dolat-mb-hint">فقط برای استعلام‌هایی که واقعا از درگاه my.gov.ir هم قابل انجام هستند تیک بزنید. متن و لینک دکمه ثابت است.</div>
 	</div>
 
-	<p class="dolat-mb-hint">دسته مادر را از باکس «دسته مادر» در ستون کناری تیک بزنید — این استعلام زیر تب «استعلام‌ها»ی همان بخش در صفحه اصلی نمایش داده می‌شود. برچسب کوچک (خودرو، مالی، ملک و...) هم از باکس «برچسب‌های استعلام» انتخاب می‌شود و رنگ کارت را تعیین می‌کند.</p>
+	<p class="dolat-mb-hint">از باکس «دسته‌ها» در ستون کناری، زیردسته <strong>«استعلام …»</strong> بخش موردنظر را انتخاب کنید (مثلا «استعلام یارانه‌ها») — همان چیزی که لیستینگ این بخش را می‌سازد. برچسب کوچک (خودرو، مالی، ملک و...) هم از باکس «برچسب‌های استعلام» انتخاب می‌شود و رنگ کارت را تعیین می‌کند.</p>
 	<?php
 }
 
@@ -150,7 +151,7 @@ function dolat_render_estelam_feedback_metabox( $post ) {
 			echo '</li>';
 		}
 		echo '</ul>';
-		echo '<a class="button button-small" href="' . esc_url( admin_url( 'edit.php?post_type=estelam&page=dolat-link-reports' ) ) . '">مشاهده همه گزارش‌ها</a>';
+		echo '<a class="button button-small" href="' . esc_url( admin_url( 'edit.php?page=dolat-link-reports' ) ) . '">مشاهده همه گزارش‌ها</a>';
 	} else {
 		echo '<p style="color:#777;">هنوز گزارشی ثبت نشده است.</p>';
 	}
@@ -188,7 +189,7 @@ function dolat_save_estelam_meta( $post_id ) {
 	}
 	update_post_meta( $post_id, '_dolat_gov_enabled', empty( $_POST['dolat_gov_enabled'] ) ? '' : '1' );
 }
-add_action( 'save_post_estelam', 'dolat_save_estelam_meta' );
+add_action( 'save_post_post', 'dolat_save_estelam_meta' );
 
 /**
  * استخراج مراحل استعلام
@@ -236,7 +237,8 @@ function dolat_render_related_estelam_metabox( $post ) {
 	$selected = (int) get_post_meta( $post->ID, 'related_estelam', true );
 
 	$options = get_posts( array(
-		'post_type'      => 'estelam',
+		'post_type'      => 'post',
+		'meta_query'     => array( array( 'key' => DOLAT_ESTELAM_META, 'value' => '1' ) ),
 		'posts_per_page' => -1,
 		'orderby'        => 'title',
 		'order'          => 'ASC',

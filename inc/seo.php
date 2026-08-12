@@ -23,7 +23,7 @@ function dolat_get_meta_description() {
 		return 'استعلام‌هایی که در همین مرورگر نشان کرده‌اید.';
 	}
 
-	if ( is_singular( 'estelam' ) ) {
+	if ( is_singular( 'post' ) && dolat_is_estelam() ) {
 		$id   = get_the_ID();
 		$desc = get_post_meta( $id, '_dolat_short_desc', true );
 		if ( ! $desc ) $desc = get_post_meta( $id, '_dolat_what_text', true );
@@ -43,7 +43,7 @@ function dolat_get_meta_description() {
 		return $term ? sprintf( 'جدیدترین مطالب و خدمات بخش %s', $term->name ) : '';
 	}
 
-	if ( is_post_type_archive( 'estelam' ) ) {
+	if ( dolat_is_estelam_archive() ) {
 		return 'مرکز جامع آموزش، دسترسی و لیستینگ تمامی استعلام‌ها و راهنمای خدمات دولتی.';
 	}
 
@@ -104,7 +104,7 @@ add_action( 'wp_head', function() {
 	$title = wp_strip_all_tags( wp_get_document_title() );
 	$image = dolat_get_meta_image();
 	$url   = is_singular() ? get_permalink() : dolat_current_url();
-	$type  = ( is_singular( 'post' ) || is_singular( 'estelam' ) ) ? 'article' : 'website';
+	$type  = is_singular( 'post' ) ? 'article' : 'website';
 
 	echo "\n<!-- دولت آنلاین: متا سئو -->\n";
 	printf( '<meta name="description" content="%s">' . "\n", esc_attr( $desc ) );
@@ -190,7 +190,7 @@ add_action( 'wp_head', function() {
    Schema.org: HowTo برای استعلام‌های دارای مراحل
 ═════════════════════════════════════════════════ */
 add_action( 'wp_head', function() {
-	if ( ! is_singular( 'estelam' ) ) return;
+	if ( ! is_singular( 'post' ) || ! dolat_is_estelam() ) return;
 	$id    = get_the_ID();
 	$steps = function_exists( 'dolat_get_estelam_steps' ) ? dolat_get_estelam_steps( $id ) : array();
 	if ( empty( $steps ) ) return; // بدون مرحله، محتوای کافی برای HowTo نیست
@@ -236,13 +236,6 @@ function dolat_get_breadcrumb_trail() {
 		if ( $sub ) $trail[] = array( 'name' => $sub->name, 'url' => get_term_link( $sub ) );
 		$trail[] = array( 'name' => get_the_title( $id ), 'url' => get_permalink( $id ) );
 
-	} elseif ( is_singular( 'estelam' ) ) {
-		$id   = get_the_ID();
-		$root = dolat_get_post_root_category( $id );
-		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => get_post_type_archive_link( 'estelam' ) );
-		if ( $root ) $trail[] = array( 'name' => $root->name, 'url' => get_term_link( $root ) );
-		$trail[] = array( 'name' => get_the_title( $id ), 'url' => get_permalink( $id ) );
-
 	} elseif ( is_category() ) {
 		$term = get_queried_object();
 		if ( $term->parent ) {
@@ -253,11 +246,11 @@ function dolat_get_breadcrumb_trail() {
 
 	} elseif ( is_tax( 'estelam_tag' ) ) {
 		$term = get_queried_object();
-		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => get_post_type_archive_link( 'estelam' ) );
+		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => dolat_estelam_archive_link() );
 		$trail[] = array( 'name' => $term->name, 'url' => get_term_link( $term ) );
 
-	} elseif ( is_post_type_archive( 'estelam' ) ) {
-		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => get_post_type_archive_link( 'estelam' ) );
+	} elseif ( dolat_is_estelam_archive() ) {
+		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => dolat_estelam_archive_link() );
 
 	} else {
 		return array();

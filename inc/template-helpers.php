@@ -149,7 +149,7 @@ function dolat_render_post_card( $post_id ) {
 /** پرطرفدارترین‌ها بر اساس شمارنده بازدید */
 function dolat_get_popular_posts( $count = 8 ) {
 	$q = new WP_Query( array(
-		'post_type'      => array( 'post', 'estelam' ),
+		'post_type'      => 'post',
 		'posts_per_page' => $count,
 		'meta_key'       => 'dolat_post_views',
 		'orderby'        => 'meta_value_num',
@@ -158,7 +158,7 @@ function dolat_get_popular_posts( $count = 8 ) {
 	) );
 	if ( ! $q->have_posts() ) {
 		$q = new WP_Query( array(
-			'post_type'      => array( 'post', 'estelam' ),
+			'post_type'      => 'post',
 			'posts_per_page' => $count,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
@@ -181,14 +181,8 @@ function dolat_get_cat_tabs( $parent_id ) {
 	$edu = dolat_get_child_by_role( $parent_id, 'edu' );
 	if ( $edu ) $tabs[] = array( 'key' => 'edu', 'label' => 'آموزش‌ها' );
 
-	$has_estelam = new WP_Query( array(
-		'post_type'      => 'estelam',
-		'posts_per_page' => 1,
-		'fields'         => 'ids',
-		'no_found_rows'  => true,
-		'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_id, 'include_children' => true ) ),
-	) );
-	if ( $has_estelam->have_posts() ) $tabs[] = array( 'key' => 'estelam', 'label' => 'استعلام‌ها' );
+	$estelam = dolat_estelam_term_for_parent( $parent_id );
+	if ( $estelam && (int) $estelam->count > 0 ) $tabs[] = array( 'key' => 'estelam', 'label' => 'استعلام‌ها' );
 
 	return $tabs;
 }
@@ -417,7 +411,7 @@ function dolat_default_menu() {
 		echo '</li>';
 	}
 
-	echo '<li><a href="' . esc_url( get_post_type_archive_link( 'estelam' ) ) . '" class="' . esc_attr( $item_cls ) . '">📋 همه استعلام‌ها</a></li>';
+	echo '<li><a href="' . esc_url( dolat_estelam_archive_link() ) . '" class="' . esc_attr( $item_cls ) . '">📋 همه استعلام‌ها</a></li>';
 	echo '</ul>';
 }
 
@@ -543,16 +537,6 @@ function dolat_get_latest_news( $count = 8 ) {
 
 /** پست‌های یک تب (news/edu/estelam) برای باکس دسته مادر در صفحه اصلی */
 function dolat_get_frontpage_tab_posts( $parent_term, $type, $total = 6 ) {
-	if ( 'estelam' === $type ) {
-		$q = new WP_Query( array(
-			'post_type'      => 'estelam',
-			'posts_per_page' => $total,
-			'no_found_rows'  => true,
-			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_term->term_id, 'include_children' => true ) ),
-		) );
-		return $q->posts;
-	}
-
 	$child = dolat_get_child_by_role( $parent_term->term_id, $type );
 	if ( ! $child ) return array();
 
@@ -630,28 +614,18 @@ function dolat_render_megamenu_column( $parent_term, $type ) {
 	$posts     = array();
 	$more_link = '';
 
-	if ( 'estelam' === $type ) {
+	// هر سه ستون یکسان کار می‌کنند: زیردسته‌ای که نقشش همین نوع است
+	$child = dolat_get_child_by_role( $parent_term->term_id, $type );
+	if ( $child ) {
 		$q = new WP_Query( array(
-			'post_type'      => 'estelam',
+			'post_type'      => 'post',
 			'posts_per_page' => 4,
 			'no_found_rows'  => true,
-			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => (int) $parent_term->term_id, 'include_children' => true ) ),
+			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $child->term_id, 'include_children' => true ) ),
 		) );
-		$posts = $q->posts;
-		// لیست واقعی استعلام‌های همین دسته، نه آرشیو دسته که نوشته‌ها را نشان می‌دهد
-		$more_link = dolat_estelam_archive_link_for_cat( $parent_term->term_id );
-	} else {
-		$child = dolat_get_child_by_role( $parent_term->term_id, $type );
-		if ( $child ) {
-			$q = new WP_Query( array(
-				'post_type'      => 'post',
-				'posts_per_page' => 4,
-				'no_found_rows'  => true,
-				'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $child->term_id, 'include_children' => true ) ),
-			) );
-			$posts     = $q->posts;
-			$more_link = get_term_link( $child );
-		}
+		$posts     = $q->posts;
+		$link      = get_term_link( $child );
+		$more_link = is_wp_error( $link ) ? '' : $link;
 	}
 
 	ob_start();
@@ -715,7 +689,7 @@ function dolat_render_mobile_categories() {
 			</div>
 		<?php endforeach; ?>
 
-		<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="block rounded-lg bg-dnavy px-3 py-2.5 text-sm font-bold text-white">📋 همه استعلام‌ها</a>
+		<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="block rounded-lg bg-dnavy px-3 py-2.5 text-sm font-bold text-white">📋 همه استعلام‌ها</a>
 	</div>
 	<?php
 	return ob_get_clean();
@@ -747,7 +721,7 @@ function dolat_render_megamenu() {
 				</li>
 				<?php endforeach; ?>
 				<li class="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
-					<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#123c52] hover:bg-white dark:text-[#e6d3a3] dark:hover:bg-slate-700">
+					<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#123c52] hover:bg-white dark:text-[#e6d3a3] dark:hover:bg-slate-700">
 						📋 همه استعلام‌ها
 					</a>
 				</li>
@@ -785,16 +759,16 @@ function dolat_estelam_link_label( $post_id ) {
 
 /** پربازدیدترین استعلام‌های کل سایت */
 function dolat_get_top_estelam( $count = 6 ) {
-	$q = new WP_Query( array(
-		'post_type'      => 'estelam',
+	$q = new WP_Query( dolat_estelam_args( array(
 		'posts_per_page' => $count,
-		'meta_key'       => 'dolat_post_views',
-		'orderby'        => 'meta_value_num',
-		'order'          => 'DESC',
 		'no_found_rows'  => true,
-	) );
+		'meta_query'     => array(
+			'views' => array( 'key' => 'dolat_post_views', 'compare' => 'EXISTS', 'type' => 'NUMERIC' ),
+		),
+		'orderby'        => array( 'views' => 'DESC' ),
+	) ) );
 	if ( ! $q->have_posts() ) {
-		$q = new WP_Query( array( 'post_type' => 'estelam', 'posts_per_page' => $count, 'no_found_rows' => true ) );
+		$q = new WP_Query( dolat_estelam_args( array( 'posts_per_page' => $count, 'no_found_rows' => true ) ) );
 	}
 	return $q->posts;
 }
@@ -860,47 +834,30 @@ function dolat_render_govsites( $rows = 2 ) {
 }
 
 /* ═════════════════════════════════════════════════
-   آرشیو استعلام‌ها (archive-estelam.php / taxonomy-estelam_tag.php)
+   لیستینگ استعلام‌ها (archive-estelam.php / taxonomy-estelam_tag.php)
 ═════════════════════════════════════════════════ */
 
 /** پربازدیدترین استعلام‌ها — کل سایت، یا محدود به یک برچسب (estelam_tag) خاص */
-/**
- * دسته‌های مادری که واقعا استعلام دارند
- * برای ساخت تب‌های «استعلام یارانه / استعلام قوه قضاییه / …» در آرشیو استعلام‌ها
- *
- * @return array<int,WP_Term>
- */
-function dolat_get_categories_with_estelam() {
-	$out = array();
-	foreach ( dolat_get_parent_categories() as $cat ) {
-		$q = new WP_Query( array(
-			'post_type'      => 'estelam',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-			'tax_query'      => array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $cat->term_id, 'include_children' => true ) ),
-		) );
-		if ( $q->have_posts() ) $out[] = $cat;
-	}
-	return $out;
-}
-
 function dolat_get_top_estelam_scoped( $term = null, $count = 5 ) {
 	if ( ! $term ) return dolat_get_top_estelam( $count );
 
-	$args = array(
-		'post_type'      => 'estelam',
+	$tax = array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => $term->term_id ) );
+
+	$q = new WP_Query( dolat_estelam_args( array(
 		'posts_per_page' => $count,
 		'no_found_rows'  => true,
-		'meta_key'       => 'dolat_post_views',
-		'orderby'        => 'meta_value_num',
-		'order'          => 'DESC',
-		'tax_query'      => array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => $term->term_id ) ),
-	);
-	$q = new WP_Query( $args );
+		'meta_query'     => array(
+			'views' => array( 'key' => 'dolat_post_views', 'compare' => 'EXISTS', 'type' => 'NUMERIC' ),
+		),
+		'orderby'        => array( 'views' => 'DESC' ),
+		'tax_query'      => $tax,
+	) ) );
 	if ( ! $q->have_posts() ) {
-		unset( $args['meta_key'], $args['orderby'], $args['order'] );
-		$q = new WP_Query( $args );
+		$q = new WP_Query( dolat_estelam_args( array(
+			'posts_per_page' => $count,
+			'no_found_rows'  => true,
+			'tax_query'      => $tax,
+		) ) );
 	}
 	return $q->posts;
 }
@@ -955,7 +912,7 @@ function dolat_render_estelam_row_card( $post_id ) {
 /** دسته‌های مادر (category) استفاده‌شده توسط استعلام‌های یک برچسب (estelam_tag) خاص */
 function dolat_get_categories_for_estelam_tag( $tag_term_id ) {
 	$post_ids = get_posts( array(
-		'post_type'      => 'estelam',
+		'post_type'      => 'post',
 		'posts_per_page' => 50,
 		'fields'         => 'ids',
 		'no_found_rows'  => true,
@@ -975,10 +932,13 @@ function dolat_get_categories_for_estelam_tag( $tag_term_id ) {
 function dolat_get_sidebar_news( $count = 4 ) {
 	$args = array( 'post_type' => 'post', 'posts_per_page' => $count, 'no_found_rows' => true );
 
-	// وقتی آرشیو استعلام با فیلتر دسته مادر باز شده، اخبار همان دسته را نشان بده
-	$filter_cat_id = (int) get_query_var( 'dolat_cat' );
-	if ( $filter_cat_id ) {
-		$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $filter_cat_id, 'include_children' => true ) );
+	// وقتی زیردسته استعلام یک بخش باز است، اخبار همان بخش را نشان بده
+	$section = 0;
+	if ( is_category() && dolat_is_estelam_category( get_queried_object() ) ) {
+		$section = (int) get_queried_object()->parent;
+	}
+	if ( $section ) {
+		$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $section, 'include_children' => true ) );
 	} elseif ( is_tax( 'estelam_tag' ) ) {
 		$term    = get_queried_object();
 		$cat_ids = $term ? dolat_get_categories_for_estelam_tag( $term->term_id ) : array();
@@ -991,7 +951,9 @@ function dolat_get_sidebar_news( $count = 4 ) {
 
 /** آخرین دیدگاه‌های تأییدشده — ترجیحاً روی پست‌تایپ استعلام */
 function dolat_get_live_comments( $count = 4 ) {
-	$comments = get_comments( array( 'status' => 'approve', 'number' => $count, 'post_type' => 'estelam' ) );
+	$ids = get_posts( dolat_estelam_args( array( 'posts_per_page' => 60, 'fields' => 'ids', 'no_found_rows' => true ) ) );
+
+	$comments = $ids ? get_comments( array( 'status' => 'approve', 'number' => $count, 'post__in' => $ids ) ) : array();
 	if ( ! $comments ) {
 		$comments = get_comments( array( 'status' => 'approve', 'number' => $count ) );
 	}
@@ -1054,7 +1016,7 @@ function dolat_render_category_post_card( $post_id ) {
 	$color   = dolat_category_color( $root );
 
 	$related     = (int) get_post_meta( $post_id, 'related_estelam', true );
-	$has_related = $related && 'estelam' === get_post_type( $related ) && 'publish' === get_post_status( $related );
+	$has_related = $related && dolat_is_estelam( $related ) && 'publish' === get_post_status( $related );
 	$btn_url     = $has_related ? get_permalink( $related ) : get_permalink( $post_id );
 	$btn_label   = $has_related ? 'استعلام مرتبط' : 'ادامه مطلب';
 

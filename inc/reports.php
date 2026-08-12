@@ -42,7 +42,7 @@ add_action( 'admin_menu', function() {
 	if ( $count ) $title .= ' <span class="update-plugins count-' . $count . '"><span class="update-count">' . number_format_i18n( $count ) . '</span></span>';
 
 	add_submenu_page(
-		'edit.php?post_type=estelam',
+		'edit.php',
 		'گزارش خرابی لینک‌ها',
 		$title,
 		'edit_posts',
@@ -54,7 +54,7 @@ add_action( 'admin_menu', function() {
 /** تعداد گزارش‌های رسیدگی‌نشده */
 function dolat_count_open_reports() {
 	$ids = get_posts( array(
-		'post_type'      => 'estelam',
+		'post_type'      => 'post',
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
 		'meta_key'       => '_dolat_fb_reports',
@@ -93,7 +93,7 @@ function dolat_render_reports_page() {
 	$filter = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : 'open';
 
 	$ids = get_posts( array(
-		'post_type'      => 'estelam',
+		'post_type'      => 'post',
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
 		'meta_key'       => '_dolat_fb_reports',
@@ -119,9 +119,9 @@ function dolat_render_reports_page() {
 		<p>گزارش‌هایی که کاربران با زدن دکمه «❌ کار نمی‌کنه» در پاپ‌آپ استعلام ثبت کرده‌اند.</p>
 
 		<ul class="subsubsub">
-			<li><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=estelam&page=dolat-link-reports&status=open' ) ); ?>" <?php echo 'open' === $filter ? 'class="current"' : ''; ?>>رسیدگی‌نشده</a> |</li>
-			<li><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=estelam&page=dolat-link-reports&status=done' ) ); ?>" <?php echo 'done' === $filter ? 'class="current"' : ''; ?>>رسیدگی‌شده</a> |</li>
-			<li><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=estelam&page=dolat-link-reports&status=all' ) ); ?>" <?php echo 'all' === $filter ? 'class="current"' : ''; ?>>همه</a></li>
+			<li><a href="<?php echo esc_url( admin_url( 'edit.php?page=dolat-link-reports&status=open' ) ); ?>" <?php echo 'open' === $filter ? 'class="current"' : ''; ?>>رسیدگی‌نشده</a> |</li>
+			<li><a href="<?php echo esc_url( admin_url( 'edit.php?page=dolat-link-reports&status=done' ) ); ?>" <?php echo 'done' === $filter ? 'class="current"' : ''; ?>>رسیدگی‌شده</a> |</li>
+			<li><a href="<?php echo esc_url( admin_url( 'edit.php?page=dolat-link-reports&status=all' ) ); ?>" <?php echo 'all' === $filter ? 'class="current"' : ''; ?>>همه</a></li>
 		</ul>
 
 		<table class="widefat striped" style="margin-top:14px;">

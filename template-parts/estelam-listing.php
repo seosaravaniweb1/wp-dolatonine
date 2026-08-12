@@ -1,21 +1,27 @@
 <?php
 /**
- * محتوای مشترک صفحه لیستینگ استعلام‌ها
- * از archive-estelam.php (آرشیو کلی) و taxonomy-estelam_tag.php (هر برچسب) فراخوانی می‌شود
+ * محتوای مشترک لیستینگ استعلام‌ها
+ * سه جا استفاده می‌شود:
+ *   ۱) آرشیو کلی /estelam/         → همه نوشته‌های تیک‌خورده
+ *   ۲) زیردسته «استعلام …» یک بخش  → همان دسته، با همین طراحی
+ *   ۳) آرشیو یک برچسب estelam_tag
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$is_archive  = is_post_type_archive( 'estelam' );
+$is_archive  = dolat_is_estelam_archive();
 $queried_tag = is_tax( 'estelam_tag' ) ? get_queried_object() : null;
 
-// فیلتر دسته مادر (از لینک «مشاهده همه» مگامنو می‌آید): /estelam/?dolat_cat=<id>
-$filter_cat_id = (int) get_query_var( 'dolat_cat' );
-$filter_cat    = $filter_cat_id ? get_term( $filter_cat_id, 'category' ) : null;
+// زیردسته استعلام یک بخش (مثلا «استعلام یارانه‌ها») و دسته مادرش
+$estelam_term = ( is_category() && dolat_is_estelam_category( get_queried_object() ) ) ? get_queried_object() : null;
+$filter_cat   = $estelam_term ? get_term( $estelam_term->parent, 'category' ) : null;
 if ( is_wp_error( $filter_cat ) ) $filter_cat = null;
 
-if ( $filter_cat ) {
-	$hero_title = 'استعلام‌های ' . $filter_cat->name;
-	$hero_desc  = 'همه استعلام‌ها و خدمات الکترونیکی بخش ' . $filter_cat->name;
+if ( $estelam_term ) {
+	$hero_title = $estelam_term->name;
+	$term_desc  = term_description();
+	$hero_desc  = $term_desc
+		? wp_strip_all_tags( $term_desc )
+		: 'همه استعلام‌ها و خدمات الکترونیکی بخش ' . ( $filter_cat ? $filter_cat->name : $estelam_term->name );
 } elseif ( $is_archive ) {
 	$hero_title = 'آموزش و لیستینگ جامع استعلام‌های دولتی';
 	$hero_desc  = 'مرکز جامع آموزش، دسترسی و لیستینگ تمامی استعلام‌ها و راهنمای خدمات دولتی…';
@@ -25,12 +31,12 @@ if ( $filter_cat ) {
 	$hero_desc  = $term_desc ? wp_strip_all_tags( $term_desc ) : 'همه استعلام‌های مرتبط با ' . $queried_tag->name;
 }
 
-$top_items = $filter_cat
-	? dolat_get_popular_in_category( $filter_cat->term_id, 'estelam', 5 )
+$top_items = $estelam_term
+	? dolat_get_popular_in_category( $estelam_term->term_id, 'post', 5 )
 	: dolat_get_top_estelam_scoped( $queried_tag, 5 );
 
-// تب‌های برچسب فقط در آرشیو کلی و بدون فیلتر دسته
-$tag_terms = ( $is_archive && ! $filter_cat ) ? get_terms( array( 'taxonomy' => 'estelam_tag', 'hide_empty' => true ) ) : array();
+// تب‌های برچسب فقط در آرشیو کلی
+$tag_terms     = $is_archive ? get_terms( array( 'taxonomy' => 'estelam_tag', 'hide_empty' => true ) ) : array();
 $live_comments = dolat_get_live_comments( 4 );
 $sidebar_news  = dolat_get_sidebar_news( 4 );
 ?>
@@ -40,16 +46,20 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 	<div class="pointer-events-none absolute inset-0 opacity-10" style="background-image:repeating-linear-gradient(45deg, #c39b45 0 1px, transparent 1px 14px), repeating-linear-gradient(-45deg, #c39b45 0 1px, transparent 1px 14px);"></div>
 
 	<div class="relative mx-auto max-w-2xl">
-		<nav class="mb-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+		<nav class="mb-3 flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-400">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="hover:text-dgold">خانه</a>
 			<span>›</span>
-			<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>" class="hover:text-dgold">استعلام‌ها</a>
+			<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="hover:text-dgold">استعلام‌ها</a>
 			<?php if ( $queried_tag ) : ?>
 				<span>›</span>
 				<span class="text-slate-300"><?php echo esc_html( $queried_tag->name ); ?></span>
-			<?php elseif ( $filter_cat ) : ?>
+			<?php elseif ( $estelam_term ) : ?>
+				<?php if ( $filter_cat ) : ?>
+					<span>›</span>
+					<a href="<?php echo esc_url( get_term_link( $filter_cat ) ); ?>" class="hover:text-dgold"><?php echo esc_html( $filter_cat->name ); ?></a>
+				<?php endif; ?>
 				<span>›</span>
-				<span class="text-slate-300"><?php echo esc_html( $filter_cat->name ); ?></span>
+				<span class="text-slate-300"><?php echo esc_html( $estelam_term->name ); ?></span>
 			<?php endif; ?>
 		</nav>
 
@@ -92,16 +102,16 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 
 			<?php dolat_ad( 'archive_top' ); ?>
 
-			<!-- تب دسته‌ها: لیست استعلام هر بخش جدا فراخوانی می‌شود -->
+			<!-- تب بخش‌ها: هر تب یک زیردسته «استعلام …» است -->
 			<?php
-			$estelam_cats = $is_archive ? dolat_get_categories_with_estelam() : array();
+			$estelam_cats = ( $is_archive || $estelam_term ) ? dolat_get_categories_with_estelam() : array();
 			$has_cat_tabs = ! empty( $estelam_cats );
 			if ( $has_cat_tabs ) :
 				$tab_base = 'whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition';
 			?>
 				<div class="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-slate-700">
-					<a href="<?php echo esc_url( get_post_type_archive_link( 'estelam' ) ); ?>"
-					   class="<?php echo esc_attr( $tab_base ); ?> <?php echo ! $filter_cat ? 'bg-dnavy text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>">
+					<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>"
+					   class="<?php echo esc_attr( $tab_base ); ?> <?php echo $is_archive ? 'bg-dnavy text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>">
 						همه استعلام‌ها
 					</a>
 					<?php foreach ( $estelam_cats as $ec ) :
@@ -119,7 +129,7 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 			<?php endif; ?>
 
 			<!-- برچسب‌های استعلام (خودرو/مالی/…) فقط اگر تعریف شده باشند -->
-			<?php $dolat_has_tag_bar = ( $is_archive && ! $filter_cat && ! empty( $tag_terms ) && ! is_wp_error( $tag_terms ) ); ?>
+			<?php $dolat_has_tag_bar = ( $is_archive && ! empty( $tag_terms ) && ! is_wp_error( $tag_terms ) ); ?>
 			<?php if ( $dolat_has_tag_bar ) : ?>
 				<div class="mb-4 flex flex-wrap items-center gap-2">
 					<span class="text-xs font-bold text-slate-400">برچسب:</span>
@@ -147,9 +157,9 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 					echo dolat_render_estelam_row_card( get_the_ID() );
 				endwhile; else : ?>
 					<div class="col-span-full rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">
-					<?php if ( $filter_cat ) : ?>
-						هنوز استعلامی به بخش «<?php echo esc_html( $filter_cat->name ); ?>» اختصاص داده نشده است.
-						<span class="mt-2 block text-xs">در صفحه ویرایش هر استعلام، از باکس «دسته مادر» در ستون کناری، تیک این دسته را بزنید تا اینجا نمایش داده شود.</span>
+					<?php if ( $estelam_term ) : ?>
+						هنوز استعلامی در «<?php echo esc_html( $estelam_term->name ); ?>» ثبت نشده است.
+						<span class="mt-2 block text-xs">یک نوشته بسازید، تیک «این محتوا یک استعلام است» را بزنید و از باکس دسته‌ها همین زیردسته را انتخاب کنید.</span>
 					<?php else : ?>
 						استعلامی یافت نشد.
 					<?php endif; ?>
