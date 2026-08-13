@@ -14,29 +14,13 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-/* ─────────────────────────────
-   Taxonomy: برچسب استعلام (رنگ کارت از روی این تعیین می‌شود)
-   روی نوشته‌ها ثبت می‌شود؛ فقط برای نوشته‌هایی که تیک «استعلام» خورده‌اند معنا دارد.
-───────────────────────────── */
-function dolat_register_estelam_tag_tax() {
-	register_taxonomy( 'estelam_tag', array( 'post' ), array(
-		'labels' => array(
-			'name'          => 'برچسب استعلام',
-			'singular_name' => 'برچسب',
-			'menu_name'     => 'برچسب‌های استعلام',
-		),
-		'hierarchical'      => false,
-		'show_ui'           => true,
-		'show_admin_column' => false,
-		'show_in_rest'      => true,
-		'rewrite'           => array( 'slug' => 'estelam-tag' ),
-	) );
-}
-add_action( 'init', 'dolat_register_estelam_tag_tax' );
+/*
+ * تکسونومی جدا برای برچسب استعلام وجود ندارد.
+ * رنگ کارت استعلام از برچسب معمولی وردپرس (post_tag) خوانده می‌شود — dolat_tag_color()
+ */
 
 /* فلاش کردن ساختار لینک‌ها هنگام فعال‌سازی — هیچ دسته‌ای ساخته نمی‌شود */
 add_action( 'after_switch_theme', function() {
-	dolat_register_estelam_tag_tax();
 	flush_rewrite_rules();
 } );
 

@@ -244,11 +244,6 @@ function dolat_get_breadcrumb_trail() {
 		}
 		$trail[] = array( 'name' => $term->name, 'url' => get_term_link( $term ) );
 
-	} elseif ( is_tax( 'estelam_tag' ) ) {
-		$term = get_queried_object();
-		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => dolat_estelam_archive_link() );
-		$trail[] = array( 'name' => $term->name, 'url' => get_term_link( $term ) );
-
 	} elseif ( dolat_is_estelam_archive() ) {
 		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => dolat_estelam_archive_link() );
 

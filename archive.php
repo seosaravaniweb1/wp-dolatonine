@@ -1,8 +1,8 @@
 <?php
 /**
  * آرشیو عمومی (fallback)
- * صفحات دسته از category.php و صفحات استعلام از archive-estelam.php /
- * taxonomy-estelam_tag.php رندر می‌شوند؛ این فایل فقط برای سایر آرشیوهای
+ * صفحات دسته از category.php و لیستینگ استعلام‌ها از archive-estelam.php
+ * رندر می‌شوند؛ این فایل فقط برای سایر آرشیوهای
  * احتمالی وردپرس (مثلا آرشیو نویسنده یا تاریخ) باقی می‌ماند.
  */
 if ( ! defined( 'ABSPATH' ) ) exit;

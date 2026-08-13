@@ -77,7 +77,7 @@ function dolat_render_estelam_card( $post_id ) {
 	$icon   = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
 	$desc   = get_post_meta( $post_id, '_dolat_short_desc', true );
 	$badge  = get_post_meta( $post_id, '_dolat_badge', true );
-	$terms  = get_the_terms( $post_id, 'estelam_tag' );
+	$terms  = get_the_terms( $post_id, 'post_tag' );
 	$tag    = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
 	$color  = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
 	$badge_meta = $badge ? dolat_badge_meta( $badge ) : null;
@@ -189,7 +189,7 @@ function dolat_get_cat_tabs( $parent_id ) {
 
 /* داده کامل استعلام برای پاپ‌آپ */
 function dolat_get_estelam_payload( $post_id ) {
-	$terms = get_the_terms( $post_id, 'estelam_tag' );
+	$terms = get_the_terms( $post_id, 'post_tag' );
 	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
 	$badge = get_post_meta( $post_id, '_dolat_badge', true );
 	$badge_meta = $badge ? dolat_badge_meta( $badge ) : null;
@@ -834,39 +834,15 @@ function dolat_render_govsites( $rows = 2 ) {
 }
 
 /* ═════════════════════════════════════════════════
-   لیستینگ استعلام‌ها (archive-estelam.php / taxonomy-estelam_tag.php)
+   لیستینگ استعلام‌ها (archive-estelam.php)
 ═════════════════════════════════════════════════ */
 
-/** پربازدیدترین استعلام‌ها — کل سایت، یا محدود به یک برچسب (estelam_tag) خاص */
-function dolat_get_top_estelam_scoped( $term = null, $count = 5 ) {
-	if ( ! $term ) return dolat_get_top_estelam( $count );
-
-	$tax = array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => $term->term_id ) );
-
-	$q = new WP_Query( dolat_estelam_args( array(
-		'posts_per_page' => $count,
-		'no_found_rows'  => true,
-		'meta_query'     => array(
-			'views' => array( 'key' => 'dolat_post_views', 'compare' => 'EXISTS', 'type' => 'NUMERIC' ),
-		),
-		'orderby'        => array( 'views' => 'DESC' ),
-		'tax_query'      => $tax,
-	) ) );
-	if ( ! $q->have_posts() ) {
-		$q = new WP_Query( dolat_estelam_args( array(
-			'posts_per_page' => $count,
-			'no_found_rows'  => true,
-			'tax_query'      => $tax,
-		) ) );
-	}
-	return $q->posts;
-}
 
 /** کارت گرید عمودی برای بخش «پرطرفدارترین خدمات» بالای آرشیو */
 function dolat_render_estelam_top_card( $post_id, $rank ) {
 	$title = get_the_title( $post_id );
 	$icon  = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
-	$terms = get_the_terms( $post_id, 'estelam_tag' );
+	$terms = get_the_terms( $post_id, 'post_tag' );
 	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
 	$color = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
 	$views = (int) get_post_meta( $post_id, 'dolat_post_views', true );
@@ -890,7 +866,7 @@ function dolat_render_estelam_row_card( $post_id ) {
 	$title = get_the_title( $post_id );
 	$icon  = get_post_meta( $post_id, '_dolat_icon', true ) ?: '📋';
 	$desc  = get_post_meta( $post_id, '_dolat_short_desc', true );
-	$terms = get_the_terms( $post_id, 'estelam_tag' );
+	$terms = get_the_terms( $post_id, 'post_tag' );
 	$tag   = $terms && ! is_wp_error( $terms ) ? $terms[0]->name : '';
 	$color = $tag ? dolat_tag_color( $tag ) : dolat_category_color( dolat_get_post_root_category( $post_id ) );
 
@@ -909,25 +885,6 @@ function dolat_render_estelam_row_card( $post_id ) {
 	return ob_get_clean();
 }
 
-/** دسته‌های مادر (category) استفاده‌شده توسط استعلام‌های یک برچسب (estelam_tag) خاص */
-function dolat_get_categories_for_estelam_tag( $tag_term_id ) {
-	$post_ids = get_posts( array(
-		'post_type'      => 'post',
-		'posts_per_page' => 50,
-		'fields'         => 'ids',
-		'no_found_rows'  => true,
-		'tax_query'      => array( array( 'taxonomy' => 'estelam_tag', 'field' => 'term_id', 'terms' => (int) $tag_term_id ) ),
-	) );
-	if ( ! $post_ids ) return array();
-
-	$cat_ids = array();
-	foreach ( $post_ids as $pid ) {
-		$terms = wp_get_post_terms( $pid, 'category', array( 'fields' => 'ids' ) );
-		if ( ! is_wp_error( $terms ) ) $cat_ids = array_merge( $cat_ids, $terms );
-	}
-	return array_unique( $cat_ids );
-}
-
 /** اخبار سایدبار آرشیو استعلام: کلی، یا محدود به دسته‌های مرتبط با برچسب جاری */
 function dolat_get_sidebar_news( $count = 4 ) {
 	$args = array( 'post_type' => 'post', 'posts_per_page' => $count, 'no_found_rows' => true );
@@ -939,12 +896,6 @@ function dolat_get_sidebar_news( $count = 4 ) {
 	}
 	if ( $section ) {
 		$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $section, 'include_children' => true ) );
-	} elseif ( is_tax( 'estelam_tag' ) ) {
-		$term    = get_queried_object();
-		$cat_ids = $term ? dolat_get_categories_for_estelam_tag( $term->term_id ) : array();
-		if ( $cat_ids ) {
-			$args['tax_query'] = array( array( 'taxonomy' => 'category', 'field' => 'term_id', 'terms' => $cat_ids ) );
-		}
 	}
 	return ( new WP_Query( $args ) )->posts;
 }

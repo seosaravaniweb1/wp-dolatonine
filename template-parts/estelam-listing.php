@@ -1,15 +1,13 @@
 <?php
 /**
  * محتوای مشترک لیستینگ استعلام‌ها
- * سه جا استفاده می‌شود:
+ * دو جا استفاده می‌شود:
  *   ۱) آرشیو کلی /estelam/         → همه نوشته‌های تیک‌خورده
  *   ۲) زیردسته «استعلام …» یک بخش  → همان دسته، با همین طراحی
- *   ۳) آرشیو یک برچسب estelam_tag
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$is_archive  = dolat_is_estelam_archive();
-$queried_tag = is_tax( 'estelam_tag' ) ? get_queried_object() : null;
+$is_archive = dolat_is_estelam_archive();
 
 // زیردسته استعلام یک بخش (مثلا «استعلام یارانه‌ها») و دسته مادرش
 $estelam_term = ( is_category() && dolat_is_estelam_category( get_queried_object() ) ) ? get_queried_object() : null;
@@ -22,21 +20,15 @@ if ( $estelam_term ) {
 	$hero_desc  = $term_desc
 		? wp_strip_all_tags( $term_desc )
 		: 'همه استعلام‌ها و خدمات الکترونیکی بخش ' . ( $filter_cat ? $filter_cat->name : $estelam_term->name );
-} elseif ( $is_archive ) {
+} else {
 	$hero_title = 'آموزش و لیستینگ جامع استعلام‌های دولتی';
 	$hero_desc  = 'مرکز جامع آموزش، دسترسی و لیستینگ تمامی استعلام‌ها و راهنمای خدمات دولتی…';
-} else {
-	$hero_title = 'خدمات ' . $queried_tag->name;
-	$term_desc  = term_description();
-	$hero_desc  = $term_desc ? wp_strip_all_tags( $term_desc ) : 'همه استعلام‌های مرتبط با ' . $queried_tag->name;
 }
 
 $top_items = $estelam_term
 	? dolat_get_popular_in_category( $estelam_term->term_id, 'post', 5 )
-	: dolat_get_top_estelam_scoped( $queried_tag, 5 );
+	: dolat_get_top_estelam( 5 );
 
-// تب‌های برچسب فقط در آرشیو کلی
-$tag_terms     = $is_archive ? get_terms( array( 'taxonomy' => 'estelam_tag', 'hide_empty' => true ) ) : array();
 $live_comments = dolat_get_live_comments( 4 );
 $sidebar_news  = dolat_get_sidebar_news( 4 );
 ?>
@@ -50,10 +42,7 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="hover:text-dgold">خانه</a>
 			<span>›</span>
 			<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="hover:text-dgold">استعلام‌ها</a>
-			<?php if ( $queried_tag ) : ?>
-				<span>›</span>
-				<span class="text-slate-300"><?php echo esc_html( $queried_tag->name ); ?></span>
-			<?php elseif ( $estelam_term ) : ?>
+			<?php if ( $estelam_term ) : ?>
 				<?php if ( $filter_cat ) : ?>
 					<span>›</span>
 					<a href="<?php echo esc_url( get_term_link( $filter_cat ) ); ?>" class="hover:text-dgold"><?php echo esc_html( $filter_cat->name ); ?></a>
@@ -128,27 +117,9 @@ $sidebar_news  = dolat_get_sidebar_news( 4 );
 				</div>
 			<?php endif; ?>
 
-			<!-- برچسب‌های استعلام (خودرو/مالی/…) فقط اگر تعریف شده باشند -->
-			<?php $dolat_has_tag_bar = ( $is_archive && ! empty( $tag_terms ) && ! is_wp_error( $tag_terms ) ); ?>
-			<?php if ( $dolat_has_tag_bar ) : ?>
-				<div class="mb-4 flex flex-wrap items-center gap-2">
-					<span class="text-xs font-bold text-slate-400">برچسب:</span>
-					<?php foreach ( $tag_terms as $t ) :
-						$active = is_tax( 'estelam_tag', $t->slug );
-						$c      = dolat_tag_color( $t->name );
-					?>
-						<a href="<?php echo esc_url( get_term_link( $t ) ); ?>"
-							class="rounded-full px-3 py-1 text-[11px] font-bold transition <?php echo $active ? 'text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'; ?>"
-							<?php echo $active ? 'style="background:' . esc_attr( $c ) . '"' : ''; ?>>
-							<?php echo esc_html( $t->name ); ?>
-						</a>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
-
 			<?php
-			// بنر دوم فقط وقتی نواری بالایش هست، وگرنه دو بنر پشت‌سرهم می‌افتند
-			if ( $has_cat_tabs || $dolat_has_tag_bar ) dolat_ad( 'archive_middle' );
+			// بنر دوم فقط وقتی نوار تبی بالایش هست، وگرنه دو بنر پشت‌سرهم می‌افتند
+			if ( $has_cat_tabs ) dolat_ad( 'archive_middle' );
 			?>
 
 			<!-- لیست استعلام‌ها -->

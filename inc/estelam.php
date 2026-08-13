@@ -428,3 +428,31 @@ add_action( 'admin_init', function() {
 	update_option( 'dolat_estelam_merged', '1' );
 	flush_rewrite_rules();
 } );
+
+/**
+ * مهاجرت یک‌باره تکسونومی حذف‌شده «برچسب استعلام» به برچسب معمولی وردپرس
+ * چون تکسونومی دیگر ثبت نمی‌شود، مستقیم از جدول ترم‌ها می‌خوانیم.
+ * ترم‌های قدیمی پاک نمی‌شوند؛ فقط معادلشان به post_tag اضافه می‌شود.
+ */
+add_action( 'admin_init', function() {
+	if ( '1' === get_option( 'dolat_estelam_tag_merged' ) ) return;
+
+	global $wpdb;
+	$rows = $wpdb->get_results(
+		"SELECT tr.object_id, t.name
+		 FROM {$wpdb->term_relationships} tr
+		 INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+		 INNER JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
+		 WHERE tt.taxonomy = 'estelam_tag'"
+	);
+
+	$by_post = array();
+	foreach ( $rows as $r ) {
+		$by_post[ (int) $r->object_id ][] = $r->name;
+	}
+	foreach ( $by_post as $post_id => $names ) {
+		wp_set_post_terms( $post_id, array_unique( $names ), 'post_tag', true );
+	}
+
+	update_option( 'dolat_estelam_tag_merged', '1' );
+} );

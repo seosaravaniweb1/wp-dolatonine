@@ -15,7 +15,7 @@
 		// ویرایشگر کلاسیک + هر چیزی که فقط برای نوشته عادی معنا دارد
 		var editorIds  = [ 'postdivrich', 'postexcerpt', 'dolat_related_estelam_box' ];
 		// باکس‌هایی که فقط برای استعلام معنا دارند
-		var estelamIds = [ 'dolat_estelam_details', 'dolat_estelam_feedback', 'tagsdiv-estelam_tag' ];
+		var estelamIds = [ 'dolat_estelam_details', 'dolat_estelam_feedback' ];
 
 		function boxes( ids ) {
 			return ids
