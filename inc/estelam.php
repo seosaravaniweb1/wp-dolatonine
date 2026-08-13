@@ -202,35 +202,36 @@ add_action( 'template_redirect', function() {
 
 
 /* ═════════════════════════════════════════════════
-   ۴) تیک «این محتوا استعلام است» + پنهان‌کردن ویرایشگر
+   ۴) پرسش «آیا این محتوا استعلام است؟» — دقیقا زیر ویرایشگر متن
 ═════════════════════════════════════════════════ */
 add_action( 'add_meta_boxes', function() {
 	add_meta_box(
 		'dolat_estelam_toggle',
-		'نوع محتوا',
+		'آیا این محتوا استعلام است؟',
 		'dolat_render_estelam_toggle_box',
 		'post',
-		'side',
-		'high'
+		'normal', // زیر ویرایشگر متن
+		'high'    // بالاتر از باکس «جزئیات استعلام»
 	);
 }, 1 );
 
 function dolat_render_estelam_toggle_box( $post ) {
 	wp_nonce_field( 'dolat_estelam_toggle_save', 'dolat_estelam_toggle_nonce' );
-
-	// نوشته جدیدی که از «افزودن استعلام» باز شده، از اول تیک‌خورده است
 	$on = dolat_is_estelam( $post->ID );
-	if ( 'auto-draft' === $post->post_status && ! empty( $_GET['dolat_estelam'] ) ) $on = true;
 	?>
-	<p style="margin-top:0;">
-		<label style="display:flex;align-items:flex-start;gap:8px;font-weight:700;">
-			<input type="checkbox" id="dolatIsEstelam" name="dolat_is_estelam" value="1" <?php checked( $on ); ?> style="margin-top:3px;">
-			<span>این محتوا یک <strong>استعلام</strong> است</span>
+	<div style="display:flex;flex-wrap:wrap;align-items:center;gap:22px;">
+		<label style="display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;cursor:pointer;">
+			<input type="radio" class="dolat-is-estelam" name="dolat_is_estelam" value="0" <?php checked( ! $on ); ?>>
+			<span>خیر — یک نوشته معمولی است</span>
 		</label>
-	</p>
-	<p class="description" style="margin-bottom:0;">
-		با زدن این تیک، ویرایشگر متن پنهان می‌شود و به‌جایش باکس <strong>«جزئیات استعلام»</strong> باز می‌شود.
-		دسته‌بندی مثل بقیه نوشته‌ها است — زیردسته <strong>«استعلام …»</strong> بخش موردنظر را انتخاب کنید.
+		<label style="display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;cursor:pointer;">
+			<input type="radio" class="dolat-is-estelam" name="dolat_is_estelam" value="1" <?php checked( $on ); ?>>
+			<span>📋 بله — این یک استعلام است</span>
+		</label>
+	</div>
+	<p class="description" style="margin:12px 0 0;line-height:1.9;">
+		با انتخاب <strong>بله</strong>، ویرایشگر متن جمع می‌شود و به‌جایش باکس <strong>«جزئیات استعلام»</strong> پایین همین صفحه باز می‌شود.
+		دسته‌بندی هیچ فرقی نمی‌کند — از باکس «دسته‌ها» زیردسته <strong>«استعلام …»</strong>ِ بخش موردنظر را تیک بزنید.
 	</p>
 	<?php
 }
@@ -250,17 +251,15 @@ function dolat_save_estelam_toggle( $post_id ) {
 add_action( 'save_post_post', 'dolat_save_estelam_toggle' );
 
 /**
- * برای استعلام‌ها ویرایشگر کلاسیک استفاده می‌شود
- * چون فیلدهای استعلام و پنهان‌کردن ویرایشگر با متاباکس‌های کلاسیک قابل اتکا هستند.
- * نوشته‌های عادی دست‌نخورده می‌مانند و همان ویرایشگر همیشگی را دارند.
+ * ویرایشگر کلاسیک برای نوشته‌ها
+ * تا پرسش «آیا این محتوا استعلام است؟» بتواند همان لحظه ویرایشگر را جمع کند
+ * و فیلدهای استعلام را باز کند — بدون ذخیره و بدون رفرش.
  */
-add_filter( 'use_block_editor_for_post', function( $use, $post ) {
-	if ( ! $post || 'post' !== $post->post_type ) return $use;
-	if ( ! empty( $_GET['dolat_estelam'] ) ) return false;
-	return dolat_is_estelam( $post->ID ) ? false : $use;
+add_filter( 'use_block_editor_for_post_type', function( $use, $post_type ) {
+	return 'post' === $post_type ? false : $use;
 }, 10, 2 );
 
-/** استایل و اسکریپت جابه‌جایی ویرایشگر/فیلدها */
+/** اسکریپت جابه‌جایی ویرایشگر/فیلدها */
 add_action( 'admin_enqueue_scripts', function( $hook ) {
 	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) return;
 
@@ -269,17 +268,6 @@ add_action( 'admin_enqueue_scripts', function( $hook ) {
 
 	wp_enqueue_script( 'dolat-admin-estelam', DOLAT_THEME_URI . '/assets/js/admin-estelam.js', array(), DOLAT_THEME_VERSION, true );
 } );
-
-/** منوی «افزودن استعلام» زیر نوشته‌ها */
-add_action( 'admin_menu', function() {
-	add_submenu_page(
-		'edit.php',
-		'افزودن استعلام',
-		'افزودن استعلام',
-		'edit_posts',
-		'post-new.php?dolat_estelam=1'
-	);
-}, 20 );
 
 
 /* ═════════════════════════════════════════════════
