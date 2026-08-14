@@ -57,26 +57,17 @@ function dolat_estelam_term_for_parent( $parent_id ) {
 	return dolat_get_child_by_role( (int) $parent_id, 'estelam' );
 }
 
-/** آدرس آرشیو کلی استعلام‌ها: /estelam/ */
-function dolat_estelam_archive_link() {
-	return get_option( 'permalink_structure' )
-		? home_url( '/estelam/' )
-		: add_query_arg( 'dolat_estelam_archive', 1, home_url( '/' ) );
-}
-
-/** آدرس لیست استعلام‌های یک دسته مادر (زیردسته استعلام آن بخش) */
-function dolat_estelam_archive_link_for_cat( $parent_id ) {
+/**
+ * آدرس لیست استعلام‌های یک بخش = آدرس زیردسته «استعلام …» همان دسته مادر.
+ * آرشیو سراسری استعلام وجود ندارد؛ اگر زیردسته ساخته نشده باشد به خود دسته مادر می‌رود.
+ */
+function dolat_estelam_section_link( $parent_id ) {
 	$term = dolat_estelam_term_for_parent( $parent_id );
-	if ( $term ) {
-		$link = get_term_link( $term );
-		if ( ! is_wp_error( $link ) ) return $link;
-	}
-	return dolat_estelam_archive_link();
-}
+	if ( ! $term ) $term = get_term( (int) $parent_id, 'category' );
+	if ( ! $term || is_wp_error( $term ) ) return home_url( '/' );
 
-/** آیا الان روی آرشیو کلی استعلام‌ها هستیم؟ */
-function dolat_is_estelam_archive() {
-	return (bool) get_query_var( 'dolat_estelam_archive' );
+	$link = get_term_link( $term );
+	return is_wp_error( $link ) ? home_url( '/' ) : $link;
 }
 
 /** دسته‌های مادری که زیردسته استعلامِ دارای مطلب دارند (برای نوار تب‌ها) */
@@ -113,58 +104,28 @@ function dolat_count_section_items( $term_id ) {
 
 
 /* ═════════════════════════════════════════════════
-   ۲) آرشیو کلی استعلام‌ها: /estelam/
-   یک آرشیو مجازی روی نوشته‌های تیک‌خورده — پست‌تایپ جدا لازم نیست.
+   ۲) انتخاب قالب
+   هیچ آرشیو سراسری «استعلام» وجود ندارد؛ لیستینگ هر بخش همان
+   زیردسته «استعلام …» خودش است و مثل هر دسته دیگری آدرس می‌گیرد.
 ═════════════════════════════════════════════════ */
-add_action( 'init', function() {
-	add_rewrite_rule( '^estelam/page/([0-9]{1,})/?$', 'index.php?dolat_estelam_archive=1&paged=$matches[1]', 'top' );
-	add_rewrite_rule( '^estelam/?$', 'index.php?dolat_estelam_archive=1', 'top' );
-} );
-
-add_filter( 'query_vars', function( $vars ) {
-	$vars[] = 'dolat_estelam_archive';
-	return $vars;
-} );
-
-add_action( 'pre_get_posts', function( $query ) {
-	if ( is_admin() || ! $query->is_main_query() ) return;
-	if ( ! $query->get( 'dolat_estelam_archive' ) ) return;
-
-	$query->set( 'post_type', 'post' );
-	$query->set( 'meta_query', array( array( 'key' => DOLAT_ESTELAM_META, 'value' => '1' ) ) );
-	$query->set( 'ignore_sticky_posts', true );
-
-	// این یک آرشیو است، نه صفحه اصلی
-	$query->is_home     = false;
-	$query->is_archive  = true;
-	$query->is_singular = false;
-} );
-
 add_filter( 'template_include', function( $template ) {
-	if ( dolat_is_estelam_archive() ) {
-		return DOLAT_THEME_DIR . '/archive-estelam.php';
-	}
 	// نوشته‌های تیک‌خورده قالب اختصاصی استعلام را می‌گیرند
 	if ( is_singular( 'post' ) && dolat_is_estelam( get_queried_object_id() ) ) {
 		return DOLAT_THEME_DIR . '/single-estelam.php';
 	}
-	// زیردسته‌های نقش‌استعلام با همان طراحی لیستینگ استعلام نمایش داده می‌شوند
+	// زیردسته‌های نقش‌استعلام با طراحی لیستینگ استعلام نمایش داده می‌شوند
 	if ( is_category() && dolat_is_estelam_category( get_queried_object() ) ) {
-		return DOLAT_THEME_DIR . '/archive-estelam.php';
+		return DOLAT_THEME_DIR . '/template-estelam-category.php';
 	}
 	return $template;
 }, 20 );
 
-/** عنوان صفحه آرشیو مجازی */
-add_filter( 'document_title_parts', function( $parts ) {
-	if ( dolat_is_estelam_archive() ) $parts['title'] = 'همه استعلام‌ها';
-	return $parts;
-} );
-
 
 /* ═════════════════════════════════════════════════
    ۳) ریدایرکت آدرس‌های قدیمی پست‌تایپ estelam
-   /estelam/<نامک>/ دیگر تک‌مطلب نیست، پس ۳۰۱ می‌دهیم به آدرس جدید همان نوشته.
+   /estelam/          → صفحه اصلی (آرشیو سراسری حذف شد)
+   /estelam/<نامک>/    → آدرس جدید همان نوشته
+   /estelam/cat/<نامک>/ → زیردسته «استعلام …» همان بخش
 ═════════════════════════════════════════════════ */
 add_action( 'template_redirect', function() {
 	if ( ! is_404() ) return;
@@ -173,8 +134,13 @@ add_action( 'template_redirect', function() {
 	if ( ! $path ) return;
 
 	$parts = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
-	// /estelam/<slug>/ و /estelam/cat/<slug>/ (ساختار نسخه قبل)
-	if ( count( $parts ) < 2 || 'estelam' !== $parts[0] ) return;
+	if ( empty( $parts ) || 'estelam' !== $parts[0] ) return;
+
+	// آرشیو سراسری قدیمی دیگر وجود ندارد
+	if ( 1 === count( $parts ) ) {
+		wp_safe_redirect( home_url( '/' ), 301 );
+		exit;
+	}
 
 	// نامک فارسی در آدرس درصد-انکود است و در دیتابیس هم به همان شکل ذخیره شده؛
 	// برای اطمینان هر دو حالت را امتحان می‌کنیم.
@@ -182,9 +148,8 @@ add_action( 'template_redirect', function() {
 		$term = get_term_by( 'slug', $parts[2], 'category' );
 		if ( ! $term ) $term = get_term_by( 'slug', urldecode( $parts[2] ), 'category' );
 		if ( $term && ! is_wp_error( $term ) ) {
-			$estelam_term = dolat_estelam_term_for_parent( $term->term_id );
-			$link         = $estelam_term ? get_term_link( $estelam_term ) : dolat_estelam_archive_link();
-			if ( ! is_wp_error( $link ) ) {
+			$link = dolat_estelam_section_link( $term->term_id );
+			if ( $link ) {
 				wp_safe_redirect( $link, 301 );
 				exit;
 			}

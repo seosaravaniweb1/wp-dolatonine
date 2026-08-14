@@ -48,17 +48,17 @@ add_filter( 'template_include', function( $template ) {
  * چون قالب از قبل فعال بوده، فقط after_switch_theme کافی نیست.
  */
 add_action( 'init', function() {
-	if ( '5' !== get_option( 'dolat_rewrite_version' ) ) {
+	if ( '6' !== get_option( 'dolat_rewrite_version' ) ) {
 		flush_rewrite_rules();
-		update_option( 'dolat_rewrite_version', '5' );
+		update_option( 'dolat_rewrite_version', '6' );
 	}
 }, 20 );
 
-/* ریدایرکت ۳۰۱ آدرس قدیمی آرشیو استعلام‌ها (estelamha) به آدرس جدید */
+/* ریدایرکت ۳۰۱ آدرس قدیمی آرشیو استعلام‌ها (estelamha) — دیگر چنین آرشیوی نداریم */
 add_action( 'template_redirect', function() {
 	global $wp;
 	if ( is_404() && isset( $wp->request ) && 'estelamha' === untrailingslashit( $wp->request ) ) {
-		wp_safe_redirect( dolat_estelam_archive_link(), 301 );
+		wp_safe_redirect( home_url( '/' ), 301 );
 		exit;
 	}
 } );

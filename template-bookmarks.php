@@ -17,7 +17,6 @@ get_header();
 
 	<div id="dBookmarksEmpty" class="hidden rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 dark:border-slate-700">
 		هنوز هیچ استعلامی نشان نکرده‌اید.
-		<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="mt-2 block font-bold text-dgold hover:underline">رفتن به لیست استعلام‌ها ←</a>
 	</div>
 </main>
 <?php get_footer(); ?>

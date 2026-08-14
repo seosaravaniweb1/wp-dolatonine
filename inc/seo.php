@@ -43,10 +43,6 @@ function dolat_get_meta_description() {
 		return $term ? sprintf( 'جدیدترین مطالب و خدمات بخش %s', $term->name ) : '';
 	}
 
-	if ( dolat_is_estelam_archive() ) {
-		return 'مرکز جامع آموزش، دسترسی و لیستینگ تمامی استعلام‌ها و راهنمای خدمات دولتی.';
-	}
-
 	if ( is_front_page() ) {
 		$d = get_theme_mod( 'dolat_hero_desc', '' );
 		return $d ? wp_strip_all_tags( $d ) : get_bloginfo( 'description' );
@@ -243,9 +239,6 @@ function dolat_get_breadcrumb_trail() {
 			if ( $parent && ! is_wp_error( $parent ) ) $trail[] = array( 'name' => $parent->name, 'url' => get_term_link( $parent ) );
 		}
 		$trail[] = array( 'name' => $term->name, 'url' => get_term_link( $term ) );
-
-	} elseif ( dolat_is_estelam_archive() ) {
-		$trail[] = array( 'name' => 'استعلام‌ها', 'url' => dolat_estelam_archive_link() );
 
 	} else {
 		return array();

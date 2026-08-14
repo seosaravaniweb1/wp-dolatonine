@@ -411,7 +411,6 @@ function dolat_default_menu() {
 		echo '</li>';
 	}
 
-	echo '<li><a href="' . esc_url( dolat_estelam_archive_link() ) . '" class="' . esc_attr( $item_cls ) . '">📋 همه استعلام‌ها</a></li>';
 	echo '</ul>';
 }
 
@@ -684,12 +683,11 @@ function dolat_render_mobile_categories() {
 					<?php foreach ( $children as $ch ) : ?>
 						<a href="<?php echo esc_url( get_term_link( $ch ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] text-slate-600 hover:text-dgold dark:text-slate-300"><?php echo esc_html( $ch->name ); ?></a>
 					<?php endforeach; ?>
-					<a href="<?php echo esc_url( dolat_estelam_archive_link_for_cat( $cat->term_id ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] text-slate-600 hover:text-dgold dark:text-slate-300">📋 استعلام <?php echo esc_html( $cat->name ); ?></a>
+					<a href="<?php echo esc_url( dolat_estelam_section_link( $cat->term_id ) ); ?>" class="block rounded px-2 py-1.5 text-[13px] text-slate-600 hover:text-dgold dark:text-slate-300">📋 استعلام <?php echo esc_html( $cat->name ); ?></a>
 				</div>
 			</div>
 		<?php endforeach; ?>
 
-		<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="block rounded-lg bg-dnavy px-3 py-2.5 text-sm font-bold text-white">📋 همه استعلام‌ها</a>
 	</div>
 	<?php
 	return ob_get_clean();
@@ -720,11 +718,6 @@ function dolat_render_megamenu() {
 					</button>
 				</li>
 				<?php endforeach; ?>
-				<li class="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
-					<a href="<?php echo esc_url( dolat_estelam_archive_link() ); ?>" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#123c52] hover:bg-white dark:text-[#e6d3a3] dark:hover:bg-slate-700">
-						📋 همه استعلام‌ها
-					</a>
-				</li>
 			</ul>
 		</div>
 
