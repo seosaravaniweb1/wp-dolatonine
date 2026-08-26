@@ -234,6 +234,43 @@ add_action( 'admin_enqueue_scripts', function( $hook ) {
 	wp_enqueue_script( 'dolat-admin-estelam', DOLAT_THEME_URI . '/assets/js/admin-estelam.js', array(), DOLAT_THEME_VERSION, true );
 } );
 
+/**
+ * ثبت فیلدهای استعلام در REST API
+ * تا ابزارهای بیرونی (مثل اسکریپت اتوماسیون تولید محتوا) بتوانند نوشته استعلام
+ * را با همه فیلدهایش بسازند. نوشتن فقط برای کاربری که اجازه ویرایش نوشته دارد.
+ */
+add_action( 'init', function() {
+	$textarea = array( '_dolat_steps', '_dolat_notice' );
+	$urls     = array( '_dolat_link_url', '_dolat_video_url' );
+
+	$keys = array(
+		DOLAT_ESTELAM_META,
+		'_dolat_icon', '_dolat_badge', '_dolat_short_desc', '_dolat_what_text',
+		'_dolat_steps', '_dolat_notice', '_dolat_agency',
+		'_dolat_link_url', '_dolat_link_label', '_dolat_video_url', '_dolat_gov_enabled',
+	);
+
+	foreach ( $keys as $key ) {
+		if ( in_array( $key, $urls, true ) ) {
+			$sanitize = 'esc_url_raw';
+		} elseif ( in_array( $key, $textarea, true ) ) {
+			$sanitize = 'sanitize_textarea_field';
+		} else {
+			$sanitize = 'sanitize_text_field';
+		}
+
+		register_post_meta( 'post', $key, array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => $sanitize,
+			'auth_callback'     => function() {
+				return current_user_can( 'edit_posts' );
+			},
+		) );
+	}
+}, 11 );
+
 
 /* ═════════════════════════════════════════════════
    ۵) ستون و فیلتر «نوع» در جدول نوشته‌ها
